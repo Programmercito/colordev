@@ -168,87 +168,87 @@ function autoForeground(h, s, l, darkTint = h, lightTint = h) {
  * - Ajusta los offsets de cada estrategia para variaciones
  */
 const HARMONY_STRATEGIES = {
-  /**
-   * ANÁLOGA: Colores vecinos. El resultado más "safe" y armonioso.
-   * 🎛️ offset1: ±15 a ±45 (cuánto se separa el secondary del base)
-   * 🎛️ offset2: ±25 a ±60 (cuánto se separa el accent del base)
-   */
+  /** Colores vecinos — suave y elegante. */
   analogous(baseHue) {
-    const direction = Math.random() > 0.5 ? 1 : -1; // Hacia la izquierda o derecha de la rueda
-    const offset1 = rand(20, 50) * direction;
-    const offset2 = rand(40, 80) * direction;
+    const dir = Math.random() > 0.5 ? 1 : -1;
     return {
-      secondaryHue: normHue(baseHue + offset1),
-      accentHue:    normHue(baseHue + offset2),
+      secondaryHue: normHue(baseHue + rand(18, 55) * dir),
+      accentHue:    normHue(baseHue + rand(38, 85) * dir),
     };
   },
 
-  /**
-   * COMPLEMENTARIA: Color opuesto (+180°).
-   * 🎛️ El secondary se mantiene cerca del base (±20°) para que no sea
-   * demasiado caótico. Solo el accent salta al otro lado.
-   */
+  /** Color opuesto +180°. */
   complementary(baseHue) {
-    const secondaryOffset = rand(-35, 35);
     return {
-      secondaryHue: normHue(baseHue + secondaryOffset),
-      accentHue:    normHue(baseHue + 180 + rand(-20, 20)), // Complementario ± variación
+      secondaryHue: normHue(baseHue + rand(-40, 40)),
+      accentHue:    normHue(baseHue + 180 + rand(-25, 25)),
     };
   },
 
-  /**
-   * TRIÁDICA: 3 colores a 120° de distancia.
-   */
+  /** 3 colores a 120° de distancia. */
   triadic(baseHue) {
     return {
-      secondaryHue: normHue(baseHue + 120 + rand(-20, 20)),
-      accentHue:    normHue(baseHue + 240 + rand(-20, 20)),
+      secondaryHue: normHue(baseHue + 120 + rand(-25, 25)),
+      accentHue:    normHue(baseHue + 240 + rand(-25, 25)),
     };
   },
 
-  /**
-   * SPLIT-COMPLEMENTARIA: Los vecinos del complementario.
-   */
+  /** Los vecinos del complementario. */
   splitComplementary(baseHue) {
     return {
-      secondaryHue: normHue(baseHue + 150 + rand(-15, 15)),
-      accentHue:    normHue(baseHue + 210 + rand(-15, 15)),
+      secondaryHue: normHue(baseHue + 150 + rand(-20, 20)),
+      accentHue:    normHue(baseHue + 210 + rand(-20, 20)),
     };
   },
 
-  /**
-   * TETRÁDICA: 4 colores (secundario a 90, acento a 270).
-   */
+  /** Cuadrado en la rueda: 90° y 270°. */
   tetradic(baseHue) {
     return {
-      secondaryHue: normHue(baseHue + 90 + rand(-15, 15)),
-      accentHue:    normHue(baseHue + 270 + rand(-15, 15)),
+      secondaryHue: normHue(baseHue + 90 + rand(-18, 18)),
+      accentHue:    normHue(baseHue + 270 + rand(-18, 18)),
     };
   },
 
-  /**
-   * CHAOTIC: Completamente aleatorio para romper la monotonía ("secuencias repetidas").
-   */
-  chaotic(baseHue) {
+  /** Colores completamente libres — máxima sorpresa. */
+  chaotic(_baseHue) {
     return {
       secondaryHue: rand(0, 360),
       accentHue:    rand(0, 360),
     };
-  }
+  },
+
+  /** Análoga amplia: segunda capa lejana (±60-100°) — sofisticada. */
+  wideAnalogous(baseHue) {
+    const dir = Math.random() > 0.5 ? 1 : -1;
+    return {
+      secondaryHue: normHue(baseHue + rand(55, 100) * dir),
+      accentHue:    normHue(baseHue + rand(100, 160) * dir),
+    };
+  },
+
+  /** Doble-split: ambos lados del complementario. */
+  doubleSplit(baseHue) {
+    return {
+      secondaryHue: normHue(baseHue + 150 + rand(-30, 30)),
+      accentHue:    normHue(baseHue - 150 + rand(-30, 30)),
+    };
+  },
+
+  /** Monocromático: mismo hue, muy poca variación — elegancia máxima. */
+  monochromatic(baseHue) {
+    return {
+      secondaryHue: normHue(baseHue + rand(-12, 12)),
+      accentHue:    normHue(baseHue + rand(-18, 18)),
+    };
+  },
 };
 
 /**
- * Elige una estrategia de armonía al azar.
- * 🎛️ VIBECODING: Cambia los pesos para favorecer estrategias más suaves o contrastantes.
+ * Elige una estrategia al azar — distribución uniforme entre todas.
  */
 function pickHarmonyStrategy() {
-  const roll = Math.random();
-  if (roll < 0.25) return 'analogous';
-  if (roll < 0.45) return 'complementary';
-  if (roll < 0.65) return 'triadic';
-  if (roll < 0.80) return 'splitComplementary';
-  if (roll < 0.90) return 'tetradic';
-  return 'chaotic';
+  const names = Object.keys(HARMONY_STRATEGIES);
+  return names[randInt(0, names.length - 1)];
 }
 
 // =============================================================================
@@ -276,98 +276,190 @@ function pickHarmonyStrategy() {
  * añádelo al array PALETTE_MOODS.
  */
 const PALETTE_MOODS = {
+  // ── Clásicos ────────────────────────────────────────────────────────────
   bold: {
     name: 'bold',
-    primaryS: [55, 80], primaryL: [42, 58],
-    secondaryS: [25, 50], secondaryL: [42, 60],
-    accentS: [45, 75], accentL: [45, 62],
-    bgTintS: [8, 25],
-    bgLightL: [95, 99], bgDarkL: [5, 12],
-    mutedLightL: [89, 95], mutedDarkL: [12, 22],
+    primaryS: [52, 82], primaryL: [38, 60],
+    secondaryS: [22, 52], secondaryL: [40, 62],
+    accentS: [42, 78], accentL: [42, 64],
+    bgTintS: [6, 26],
+    bgLightL: [94, 99], bgDarkL: [4, 13],
+    mutedLightL: [87, 94], mutedDarkL: [11, 23],
   },
   soft: {
     name: 'soft',
-    primaryS: [30, 55], primaryL: [55, 72],
-    secondaryS: [20, 40], secondaryL: [55, 70],
-    accentS: [30, 55], accentL: [55, 70],
-    bgTintS: [5, 18],
-    bgLightL: [96, 99], bgDarkL: [8, 15],
-    mutedLightL: [90, 96], mutedDarkL: [15, 24],
+    primaryS: [28, 58], primaryL: [52, 74],
+    secondaryS: [18, 44], secondaryL: [52, 72],
+    accentS: [28, 58], accentL: [52, 72],
+    bgTintS: [4, 20],
+    bgLightL: [95, 99], bgDarkL: [7, 16],
+    mutedLightL: [89, 96], mutedDarkL: [14, 26],
   },
   muted: {
     name: 'muted',
-    primaryS: [18, 42], primaryL: [35, 55],
-    secondaryS: [12, 30], secondaryL: [40, 58],
-    accentS: [20, 45], accentL: [40, 58],
-    bgTintS: [3, 12],
-    bgLightL: [94, 98], bgDarkL: [10, 18],
-    mutedLightL: [88, 93], mutedDarkL: [18, 28],
+    primaryS: [12, 40], primaryL: [30, 58],
+    secondaryS: [8, 28], secondaryL: [36, 60],
+    accentS: [14, 42], accentL: [36, 60],
+    bgTintS: [2, 14],
+    bgLightL: [93, 99], bgDarkL: [9, 20],
+    mutedLightL: [86, 94], mutedDarkL: [17, 30],
   },
   deep: {
     name: 'deep',
-    primaryS: [45, 75], primaryL: [30, 48],
-    secondaryS: [25, 50], secondaryL: [32, 50],
-    accentS: [40, 70], accentL: [35, 55],
-    bgTintS: [15, 30],
-    bgLightL: [92, 97], bgDarkL: [2, 8],
-    mutedLightL: [85, 92], mutedDarkL: [8, 16],
+    primaryS: [42, 78], primaryL: [22, 46],
+    secondaryS: [22, 52], secondaryL: [26, 50],
+    accentS: [38, 72], accentL: [28, 52],
+    bgTintS: [12, 32],
+    bgLightL: [90, 97], bgDarkL: [2, 9],
+    mutedLightL: [83, 91], mutedDarkL: [7, 17],
   },
   vibrant: {
     name: 'vibrant',
-    primaryS: [72, 95], primaryL: [48, 62],
-    secondaryS: [45, 70], secondaryL: [48, 65],
-    accentS: [65, 95], accentL: [48, 65],
-    bgTintS: [10, 30],
-    bgLightL: [95, 99], bgDarkL: [4, 12],
-    mutedLightL: [88, 94], mutedDarkL: [12, 20],
+    primaryS: [74, 100], primaryL: [44, 64],
+    secondaryS: [48, 74], secondaryL: [46, 67],
+    accentS: [68, 100], accentL: [46, 66],
+    bgTintS: [8, 32],
+    bgLightL: [94, 99], bgDarkL: [3, 12],
+    mutedLightL: [86, 94], mutedDarkL: [11, 21],
   },
   earthy: {
     name: 'earthy',
-    primaryS: [15, 35], primaryL: [30, 50],
-    secondaryS: [10, 25], secondaryL: [35, 55],
-    accentS: [20, 40], accentL: [35, 55],
-    bgTintS: [10, 25],
-    bgLightL: [90, 95], bgDarkL: [12, 20],
-    mutedLightL: [82, 88], mutedDarkL: [20, 30],
+    primaryS: [12, 38], primaryL: [26, 52],
+    secondaryS: [8, 24], secondaryL: [32, 56],
+    accentS: [16, 42], accentL: [32, 56],
+    bgTintS: [8, 28],
+    bgLightL: [88, 95], bgDarkL: [10, 22],
+    mutedLightL: [80, 89], mutedDarkL: [19, 32],
   },
   pastel: {
     name: 'pastel',
-    primaryS: [40, 70], primaryL: [70, 85],
-    secondaryS: [30, 60], secondaryL: [70, 85],
-    accentS: [40, 75], accentL: [70, 85],
-    bgTintS: [15, 35],
-    bgLightL: [96, 99], bgDarkL: [15, 25],
-    mutedLightL: [90, 95], mutedDarkL: [25, 35],
+    primaryS: [38, 72], primaryL: [68, 87],
+    secondaryS: [28, 62], secondaryL: [68, 86],
+    accentS: [38, 76], accentL: [68, 87],
+    bgTintS: [12, 36],
+    bgLightL: [95, 99], bgDarkL: [14, 26],
+    mutedLightL: [89, 96], mutedDarkL: [24, 36],
   },
   midnight: {
     name: 'midnight',
-    primaryS: [50, 80], primaryL: [50, 70],
-    secondaryS: [30, 60], secondaryL: [40, 60],
-    accentS: [60, 90], accentL: [50, 70],
-    bgTintS: [25, 45],
-    bgLightL: [94, 98], bgDarkL: [3, 9], 
-    mutedLightL: [86, 92], mutedDarkL: [9, 16],
-  }
+    primaryS: [48, 82], primaryL: [48, 72],
+    secondaryS: [28, 62], secondaryL: [38, 62],
+    accentS: [58, 92], accentL: [48, 72],
+    bgTintS: [22, 48],
+    bgLightL: [93, 98], bgDarkL: [2, 10],
+    mutedLightL: [84, 92], mutedDarkL: [8, 18],
+  },
+
+  // ── Nuevos ──────────────────────────────────────────────────────────────
+  neon: {
+    // Saturaciones extremas, fondos muy oscuros / muy blancos
+    name: 'neon',
+    primaryS: [88, 100], primaryL: [52, 68],
+    secondaryS: [62, 88], secondaryL: [52, 70],
+    accentS: [82, 100], accentL: [52, 70],
+    bgTintS: [14, 38],
+    bgLightL: [96, 99], bgDarkL: [2, 8],
+    mutedLightL: [88, 95], mutedDarkL: [8, 16],
+  },
+  jewel: {
+    // Saturación muy alta, luminosidad baja → colores gema (esmeralda, zafiro, rubí)
+    name: 'jewel',
+    primaryS: [62, 92], primaryL: [22, 42],
+    secondaryS: [40, 72], secondaryL: [24, 44],
+    accentS: [58, 90], accentL: [24, 44],
+    bgTintS: [16, 40],
+    bgLightL: [90, 96], bgDarkL: [4, 12],
+    mutedLightL: [82, 90], mutedDarkL: [10, 20],
+  },
+  candy: {
+    // Pasteles pero saturados, luminosos y dulces
+    name: 'candy',
+    primaryS: [58, 88], primaryL: [62, 82],
+    secondaryS: [44, 74], secondaryL: [62, 82],
+    accentS: [58, 90], accentL: [64, 84],
+    bgTintS: [20, 46],
+    bgLightL: [96, 99], bgDarkL: [10, 20],
+    mutedLightL: [90, 96], mutedDarkL: [20, 32],
+  },
+  retro: {
+    // Saturación media-alta, luminosidad media → paleta de los 70-80s
+    name: 'retro',
+    primaryS: [44, 72], primaryL: [42, 62],
+    secondaryS: [32, 58], secondaryL: [44, 64],
+    accentS: [38, 68], accentL: [44, 64],
+    bgTintS: [12, 30],
+    bgLightL: [88, 95], bgDarkL: [8, 18],
+    mutedLightL: [80, 88], mutedDarkL: [16, 28],
+  },
+  mono: {
+    // Saturación muy baja → casi escala de grises con tinte sutil
+    name: 'mono',
+    primaryS: [4, 18], primaryL: [18, 52],
+    secondaryS: [2, 12], secondaryL: [30, 60],
+    accentS: [6, 20], accentL: [30, 58],
+    bgTintS: [1, 8],
+    bgLightL: [94, 99], bgDarkL: [6, 18],
+    mutedLightL: [87, 94], mutedDarkL: [16, 28],
+  },
+  ice: {
+    // Azules fríos y blancos cristalinos, saturación baja-media
+    name: 'ice',
+    primaryS: [30, 65], primaryL: [55, 78],
+    secondaryS: [20, 48], secondaryL: [58, 80],
+    accentS: [32, 68], accentL: [56, 78],
+    bgTintS: [8, 28],
+    bgLightL: [95, 99], bgDarkL: [6, 16],
+    mutedLightL: [89, 96], mutedDarkL: [14, 24],
+  },
+  fire: {
+    // Rojizos, naranjas, amarillos saturados y cálidos
+    name: 'fire',
+    primaryS: [68, 100], primaryL: [44, 62],
+    secondaryS: [48, 80], secondaryL: [46, 65],
+    accentS: [62, 98], accentL: [48, 68],
+    bgTintS: [10, 32],
+    bgLightL: [93, 98], bgDarkL: [4, 12],
+    mutedLightL: [85, 93], mutedDarkL: [10, 20],
+  },
+  corporate: {
+    // Muy bajo contraste, profesional, conservador
+    name: 'corporate',
+    primaryS: [22, 52], primaryL: [26, 50],
+    secondaryS: [10, 28], secondaryL: [36, 58],
+    accentS: [24, 52], accentL: [34, 56],
+    bgTintS: [2, 10],
+    bgLightL: [96, 99], bgDarkL: [8, 16],
+    mutedLightL: [90, 96], mutedDarkL: [16, 26],
+  },
+  aurora: {
+    // Teñidos de verde/turquesa/magenta, muy saturados, fondo oscuro
+    name: 'aurora',
+    primaryS: [70, 100], primaryL: [50, 70],
+    secondaryS: [52, 82], secondaryL: [48, 68],
+    accentS: [72, 100], accentL: [50, 72],
+    bgTintS: [28, 55],
+    bgLightL: [92, 97], bgDarkL: [3, 10],
+    mutedLightL: [83, 91], mutedDarkL: [8, 17],
+  },
+  chalk: {
+    // Apagados, tiza, muy suaves, baja saturación + alta luminosidad
+    name: 'chalk',
+    primaryS: [8, 32], primaryL: [58, 78],
+    secondaryS: [6, 24], secondaryL: [60, 80],
+    accentS: [10, 34], accentL: [58, 78],
+    bgTintS: [3, 14],
+    bgLightL: [95, 99], bgDarkL: [12, 24],
+    mutedLightL: [89, 96], mutedDarkL: [22, 34],
+  },
 };
 
 /**
- * Elige un mood al azar para la paleta.
- *
- * 🎛️ VIBECODING: Ajusta estos pesos para cambiar la frecuencia.
- * Actualmente:
- *   - bold:    25% (el más "estándar")
- *   - soft:    25% (pasteles elegantes)
- *   - muted:   20% (corporativo/luxury)
- *   - deep:    15% (premium oscuro)
- *   - vibrant: 15% (energético)
+ * Elige un mood al azar para la paleta — distribución uniforme entre todos.
+ * 🎛️ VIBECODING: Ajusta los pesos para favorecer estilos concretos.
  */
 function pickMood() {
-  const roll = Math.random();
-  if (roll < 0.25) return PALETTE_MOODS.bold;
-  if (roll < 0.50) return PALETTE_MOODS.soft;
-  if (roll < 0.70) return PALETTE_MOODS.muted;
-  if (roll < 0.85) return PALETTE_MOODS.deep;
-  return PALETTE_MOODS.vibrant;
+  const names = Object.keys(PALETTE_MOODS);
+  return PALETTE_MOODS[names[randInt(0, names.length - 1)]];
 }
 
 // =============================================================================
@@ -391,14 +483,23 @@ function pickMood() {
  * @returns {Object} Tema completo con light, dark, swatches y metadata
  */
 export function generateTheme(options = {}) {
-  // ── Paso 1: Hue base (Filtro Anti-Verde-Tóxico) ─────────────────────────
+  // ── Paso 1: Hue base ────────────────────────────────────────────────────
+  // El filtro anti-verde ya NO bloquea colores — solo redirige el verde
+  // tóxico chartreuse (95-130°) el 25% de las veces para mayor variedad.
   let baseHue = options.baseHue !== undefined ? options.baseHue : rand(0, 360);
-  // Si el hue es aleatorio y cae en la zona del "verde chillón feo" (90-140),
-  // lo empujamos hacia un verde menta/turquesa elegante (150-170) o amarillo/lima (60-80).
-  // Solo lo aplicamos un 70% de las veces para permitir también colores crudos y más variados.
-  if (options.baseHue === undefined && baseHue > 90 && baseHue < 140 && Math.random() > 0.3) {
-    baseHue = Math.random() > 0.5 ? rand(150, 170) : rand(50, 80);
+  if (options.baseHue === undefined && baseHue > 95 && baseHue < 130 && Math.random() < 0.25) {
+    baseHue = Math.random() > 0.5 ? rand(148, 175) : rand(52, 82);
   }
+
+  // ── Micro-variación global ───────────────────────────────────────────────
+  // Multiplicador aleatorio que amplifica o reduce la saturación de TODA la paleta
+  // Rango: 0.70 (apagado) ↔ 1.35 (potenciado) — produce paletas muy distintas
+  // con los MISMOS parámetros de mood.
+  const satTwist = rand(0.72, 1.32);
+  const litTwist = rand(0.92, 1.08); // pequeña variación de luminosidad global
+  /** Aplica micro-variación a un valor de saturación clampado a [1, 100]. */
+  const twistS = (s) => Math.min(100, Math.max(1, s * satTwist));
+  const twistL = (l) => Math.min(98, Math.max(2, l * litTwist));
 
   // ── Paso 2: Estrategia de armonía ───────────────────────────────────────
   const strategyName = options.strategyName || pickHarmonyStrategy();
@@ -411,24 +512,23 @@ export function generateTheme(options = {}) {
   // ── Paso 3: Generar PRIMARY según el mood ───────────────────────────────
   const primary = {
     h: baseHue,
-    s: rand(mood.primaryS[0], mood.primaryS[1]),
-    l: rand(mood.primaryL[0], mood.primaryL[1]),
+    s: twistS(rand(mood.primaryS[0], mood.primaryS[1])),
+    l: twistL(rand(mood.primaryL[0], mood.primaryL[1])),
   };
 
   // ── Paso 6: Generar DESTRUCTIVE ─────────────────────────────────────────
-  // Para variedad, puede ser desde magenta/rosado (330) hasta naranja (30)
   const destructiveHue = Math.random() > 0.5 ? rand(330, 360) : rand(0, 30);
   const destructive = {
     h: destructiveHue,
-    s: rand(Math.min(90, mood.primaryS[0] + 15), 98),
+    s: rand(Math.min(90, mood.primaryS[0] + 15), 100),
     l: rand(Math.max(35, mood.primaryL[0] - 10), Math.min(65, mood.primaryL[1] + 10)),
   };
 
   // ── Paso 4: Generar SECONDARY ───────────────────────────────────────────
   const secondaryBase = {
     h: secondaryHue,
-    s: rand(mood.secondaryS[0], mood.secondaryS[1]),
-    l: rand(mood.secondaryL[0], mood.secondaryL[1]),
+    s: twistS(rand(mood.secondaryS[0], mood.secondaryS[1])),
+    l: twistL(rand(mood.secondaryL[0], mood.secondaryL[1])),
   };
   const secondaryLight = {
     h: secondaryHue,
@@ -444,8 +544,8 @@ export function generateTheme(options = {}) {
   // ── Paso 5: Generar ACCENT ──────────────────────────────────────────────
   const accent = {
     h: accentHue,
-    s: rand(mood.accentS[0], mood.accentS[1]),
-    l: rand(mood.accentL[0], mood.accentL[1]),
+    s: twistS(rand(mood.accentS[0], mood.accentS[1])),
+    l: twistL(rand(mood.accentL[0], mood.accentL[1])),
   };
   const accentLight = {
     h: accentHue,
@@ -458,8 +558,7 @@ export function generateTheme(options = {}) {
     l: rand(mood.mutedDarkL[0], Math.min(40, mood.mutedDarkL[1] + 5)),
   };
 
-  // ── NUEVO: Tintes para fondos y texto (variedad en oscuros) ────────────
-  // Los colores oscuros pueden ser azul negro, verde oscuro, o el baseHue.
+  // ── Tintes para fondos y texto ──────────────────────────────────────────
   const darkTintCandidates = [baseHue, secondaryHue, accentHue, rand(200, 260), rand(140, 180)];
   const darkTintHue = Math.random() > 0.35 ? darkTintCandidates[randInt(0, darkTintCandidates.length - 1)] : baseHue;
   const lightTintHue = Math.random() > 0.6 ? secondaryHue : baseHue;
@@ -586,6 +685,13 @@ const ADJECTIVES = [
   'Midnight', 'Electric', 'Mystic', 'Solar', 'Lunar', 'Crystal',
   'Pearl', 'Abyssal', 'Radiant', 'Lucid', 'Vivid', 'Silent', 'Dynamic',
   'Fluid', 'Aero', 'Stellar', 'Digital', 'Quantum', 'Serene', 'Wild',
+  'Obsidian', 'Neon', 'Infrared', 'Ultraviolet', 'Prismatic', 'Halcyon',
+  'Cobalt', 'Crimson', 'Amber', 'Jade', 'Ivory', 'Onyx', 'Ash',
+  'Twilight', 'Galactic', 'Nebula', 'Phantom', 'Spectral', 'Holo',
+  'Savage', 'Raw', 'Deep', 'Pale', 'Vivid', 'Dim', 'Lush', 'Burnt',
+  'Chrome', 'Matte', 'Gloss', 'Satin', 'Cyber', 'Retro', 'Pastel',
+  'Noire', 'Sepia', 'Monochrome', 'Candy', 'Toxic', 'Acid', 'Ghost',
+  'Prism', 'Opal', 'Blaze', 'Frost', 'Storm', 'Wave', 'Drift',
 ];
 
 const NOUNS = [
@@ -593,6 +699,11 @@ const NOUNS = [
   'Echo', 'Haze', 'Tide', 'Flare', 'Shade', 'Crest', 'Veil', 'Mist',
   'Peak', 'Void', 'Aura', 'Flux', 'Core', 'Edge', 'Depth', 'Trace',
   'Beam', 'Rift', 'Surge', 'Blaze', 'Flow', 'Dust',
+  'Signal', 'Layer', 'Portal', 'Orbit', 'Canvas', 'Prism', 'Spectrum',
+  'Horizon', 'Zenith', 'Nadir', 'Apex', 'Root', 'Branch', 'Leaf',
+  'Stone', 'Sand', 'Glass', 'Wire', 'Grid', 'Node', 'Link', 'Arc',
+  'Dusk', 'Noon', 'Ember', 'Ash', 'Frost', 'Rain', 'Snow', 'Wind',
+  'Sea', 'Sky', 'Earth', 'Fire', 'Ice', 'Lava', 'Fog', 'Hue',
 ];
 
 function generateThemeName() {
