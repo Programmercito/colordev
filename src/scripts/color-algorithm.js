@@ -1,21 +1,29 @@
 /**
  * =============================================================================
- * ARMONIC THEMES — Color Generation Algorithm
+ * ARMONIC THEMES — Color Generation Algorithm v2
  * =============================================================================
  *
- * Este módulo es el corazón matemático de Armonic Themes.
- * Genera paletas de colores semánticas completamente aleatorias usando el
- * espacio de color HSL (Hue, Saturation, Lightness).
+ * PRINCIPIO FUNDAMENTAL:
+ * En lugar de generar cada color de forma independiente (lo que crea paletas
+ * caóticas y feas), este algoritmo:
  *
- * GUÍA DE VIBECODING:
- * Cada función está documentada con sus rangos numéricos.
- * Puedes ajustar cualquier rango para cambiar la "personalidad" del generador.
- * Busca los comentarios "🎛️ VIBECODING:" para encontrar los parámetros clave.
+ *   1. Elige UN solo Hue base aleatorio (0-360°) → este define la "personalidad"
+ *   2. Elige UNA estrategia de armonía al azar:
+ *      - Análoga:             hues cercanos (±30°)  → paletas suaves y elegantes
+ *      - Complementaria:      hue opuesto (+180°)   → paletas contrastantes y vibrantes
+ *      - Triádica:            3 hues a 120° entre sí → paletas ricas y balanceadas
+ *      - Split-complementaria: opuesto ± 30°         → contraste con más variedad
+ *   3. TODOS los colores de la paleta se derivan del hue base y sus hues armónicos
+ *   4. Los fondos (background, muted) usan el hue base con saturación MUY baja
+ *   5. Los foregrounds se calculan por contraste automático (WCAG)
  *
- * CONCEPTOS CLAVE:
- *   H (Hue):        0–360  → El color "puro" (rojo, verde, azul, etc.)
- *   S (Saturation): 0–100% → Qué tan vívido/gris es el color
- *   L (Lightness):  0–100% → Qué tan oscuro (0=negro) o claro (100=blanco)
+ * RESULTADO: Cada paleta generada se siente coherente y profesional,
+ * no importa qué color base toque.
+ *
+ * 🎛️ VIBECODING:
+ * - Para paletas más "locas": sube los rangos de saturación
+ * - Para paletas más "corporativas": baja la saturación y reduce los offsets de hue
+ * - Para forzar un tipo de armonía: cambia la función pickHarmonyStrategy()
  * =============================================================================
  */
 
@@ -25,41 +33,39 @@
 
 /**
  * Genera un número aleatorio flotante entre min y max.
- * Es el bloque más básico de todo el algoritmo.
- *
- * 🎛️ VIBECODING: Esta función la usan TODAS las demás.
- * Si quisieras añadir una "semilla" fija para reproducibilidad,
- * reemplaza Math.random() por un generador de números pseudoaleatorios (PRNG).
+ * 🎛️ VIBECODING: Reemplaza Math.random() por un PRNG con semilla para
+ * poder reproducir paletas exactas.
  */
 function rand(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-/**
- * Genera un entero aleatorio entre min y max (inclusive).
- */
 function randInt(min, max) {
   return Math.floor(rand(min, max + 1));
 }
 
 /**
- * Convierte un color HSL a su representación de string para CSS.
- * @param {number} h - Hue (0-360)
- * @param {number} s - Saturation (0-100)
- * @param {number} l - Lightness (0-100)
- * @returns {string} - String CSS: "hsl(h, s%, l%)"
+ * Normaliza un hue para que siempre esté en el rango 0-360.
+ * Ej: -30 → 330, 400 → 40
+ */
+function normHue(h) {
+  return ((h % 360) + 360) % 360;
+}
+
+// =============================================================================
+// CONVERSIONES DE COLOR
+// =============================================================================
+
+/**
+ * HSL a string CSS: "hsl(h, s%, l%)"
  */
 export function hslToString(h, s, l) {
   return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
 }
 
 /**
- * Convierte HSL a formato HEX (#RRGGBB).
- * Útil para exportar los colores en formatos estándar.
- * @param {number} h - Hue (0-360)
- * @param {number} s - Saturation (0-100)
- * @param {number} l - Lightness (0-100)
- * @returns {string} - String HEX: "#rrggbb"
+ * HSL a HEX (#rrggbb).
+ * Usa la fórmula estándar de conversión directa HSL → RGB → HEX.
  */
 export function hslToHex(h, s, l) {
   s /= 100;
@@ -72,7 +78,7 @@ export function hslToHex(h, s, l) {
 }
 
 /**
- * Convierte un string HEX a un objeto {h, s, l}.
+ * HEX (#rrggbb) a un objeto { h, s, l }.
  */
 export function hexToHsl(hex) {
   let r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -95,13 +101,13 @@ export function hexToHsl(hex) {
 }
 
 // =============================================================================
-// CONTRASTE Y ACCESIBILIDAD (WCAG)
+// CONTRASTE Y ACCESIBILIDAD (WCAG 2.1)
 // =============================================================================
 
 /**
- * Calcula la luminancia relativa de un color HSL.
- * La luminancia es la "luminosidad perceptual" de un color según el ojo humano.
- * Usado para calcular la proporción de contraste WCAG.
+ * Luminancia relativa de un color HSL (según WCAG 2.1).
+ * Mide cuánta "luz" percibe el ojo humano de un color.
+ * Rango: 0 (negro absoluto) a 1 (blanco absoluto).
  */
 function getLuminance(h, s, l) {
   const hex = hslToHex(h, s, l);
@@ -113,184 +119,115 @@ function getLuminance(h, s, l) {
 }
 
 /**
- * Calcula la proporción de contraste entre dos colores HSL.
- * El estándar WCAG AA requiere ≥ 4.5:1 para texto normal.
- * El estándar WCAG AAA requiere ≥ 7:1.
- * @returns {number} - Proporción de contraste (1:1 = sin contraste, 21:1 = máximo)
- */
-function getContrastRatio(h1, s1, l1, h2, s2, l2) {
-  const lum1 = getLuminance(h1, s1, l1);
-  const lum2 = getLuminance(h2, s2, l2);
-  const lighter = Math.max(lum1, lum2);
-  const darker = Math.min(lum1, lum2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-/**
- * Dado un color de fondo (background), genera el color de texto (foreground)
- * que maximice la legibilidad. Siempre devuelve o blanco o negro.
+ * Dado un color de fondo, devuelve un foreground que garantice contraste legible.
+ * Devuelve casi-negro o casi-blanco dependiendo de la luminancia del fondo.
  *
- * 🎛️ VIBECODING: Para cambiar el umbral de decisión blanco/negro,
- * ajusta el valor 0.179. Más alto = usa blanco en más casos. Más bajo = usa negro más.
+ * 🎛️ VIBECODING:
+ * - Umbral 0.179 = el punto medio estándar de la percepción humana
+ * - Subir el umbral (ej. 0.3) = usa blanco más a menudo
+ * - Bajarlo (ej. 0.1) = usa negro más a menudo
  */
-function getForegroundForBackground(h, s, l) {
+function autoForeground(h, s, l) {
   const lum = getLuminance(h, s, l);
-  // Si la luminancia es mayor a ~0.179, el fondo es suficientemente claro → texto oscuro
-  return lum > 0.179 ? { h: 0, s: 0, l: 10 } : { h: 0, s: 0, l: 96 };
+  return lum > 0.179
+    ? { h: 0, s: 0, l: 8 }   // Fondo claro → texto casi negro
+    : { h: 0, s: 0, l: 96 }; // Fondo oscuro → texto casi blanco
 }
 
 // =============================================================================
-// GENERACIÓN DE COLORES INDIVIDUALES
+// ESTRATEGIAS DE ARMONÍA DE COLOR
 // =============================================================================
 
 /**
- * Genera los colores de background y foreground para modo LIGHT.
+ * Cada estrategia recibe el hue base y devuelve un objeto con los hues
+ * derivados para secondary, accent, y destructive.
+ *
+ * ANALOGOUS (Análoga):
+ *   Usa colores vecinos en la rueda de color (±15° a ±45°).
+ *   Resultado: Paletas muy suaves, elegantes, "de diseñador".
+ *   Ejemplo: Si base=azul(220°), secondary≈200°, accent≈250°
+ *
+ * COMPLEMENTARY (Complementaria):
+ *   Usa el color opuesto en la rueda (+180°).
+ *   Resultado: Paletas con mucho contraste y energía.
+ *   Ejemplo: Si base=azul(220°), accent≈40° (naranja)
+ *
+ * TRIADIC (Triádica):
+ *   Usa 3 colores equidistantes en la rueda (cada 120°).
+ *   Resultado: Paletas ricas, coloridas pero equilibradas.
+ *   Ejemplo: Si base=azul(220°), secondary≈340°, accent≈100°
+ *
+ * SPLIT_COMPLEMENTARY (Split-complementaria):
+ *   Usa los dos colores adyacentes al complementario (+150° y +210°).
+ *   Resultado: Similar a complementaria pero menos agresiva.
+ *   Ejemplo: Si base=azul(220°), secondary≈10°, accent≈70°
  *
  * 🎛️ VIBECODING:
- * - S (saturation) baja → fondos más grises y neutrales
- * - S alta → fondos con tinte de color (puede verse muy saturado)
- * - L alta (85-98) → fondos muy claros y limpios
- * - L más baja (70-85) → fondos tipo "pastel"
+ * - Para SOLO paletas suaves: retorna siempre 'analogous'
+ * - Para SOLO paletas vibrantes: retorna siempre 'complementary'
+ * - Ajusta los offsets de cada estrategia para variaciones
  */
-function generateBackground_Light() {
-  const h = rand(0, 360);   // Hue completamente aleatorio
-  const s = rand(0, 15);    // 🎛️ Saturación baja = fondos neutros y elegantes
-  const l = rand(90, 99);   // 🎛️ Luminosidad muy alta = fondos casi blancos
-  return { h, s, l };
-}
+const HARMONY_STRATEGIES = {
+  /**
+   * ANÁLOGA: Colores vecinos. El resultado más "safe" y armonioso.
+   * 🎛️ offset1: ±15 a ±45 (cuánto se separa el secondary del base)
+   * 🎛️ offset2: ±25 a ±60 (cuánto se separa el accent del base)
+   */
+  analogous(baseHue) {
+    const direction = Math.random() > 0.5 ? 1 : -1; // Hacia la izquierda o derecha de la rueda
+    const offset1 = rand(20, 45) * direction;
+    const offset2 = rand(35, 65) * direction;
+    return {
+      secondaryHue: normHue(baseHue + offset1),
+      accentHue:    normHue(baseHue + offset2),
+    };
+  },
+
+  /**
+   * COMPLEMENTARIA: Color opuesto (+180°).
+   * 🎛️ El secondary se mantiene cerca del base (±20°) para que no sea
+   * demasiado caótico. Solo el accent salta al otro lado.
+   */
+  complementary(baseHue) {
+    const secondaryOffset = rand(-25, 25);
+    return {
+      secondaryHue: normHue(baseHue + secondaryOffset),
+      accentHue:    normHue(baseHue + 180 + rand(-15, 15)), // Complementario ± variación
+    };
+  },
+
+  /**
+   * TRIÁDICA: 3 colores a 120° de distancia.
+   */
+  triadic(baseHue) {
+    return {
+      secondaryHue: normHue(baseHue + 120 + rand(-15, 15)),
+      accentHue:    normHue(baseHue + 240 + rand(-15, 15)),
+    };
+  },
+
+  /**
+   * SPLIT-COMPLEMENTARIA: Los vecinos del complementario.
+   */
+  splitComplementary(baseHue) {
+    return {
+      secondaryHue: normHue(baseHue + 150 + rand(-10, 10)),
+      accentHue:    normHue(baseHue + 210 + rand(-10, 10)),
+    };
+  },
+};
 
 /**
- * Genera los colores de background y foreground para modo DARK.
- *
- * 🎛️ VIBECODING:
- * - L baja (4-18) → fondos muy oscuros tipo "Negro profundo"
- * - L más alta (18-30) → fondos oscuros tipo "Pizarra"
- * - S (2-12) → permite fondos con tinte sutil de color
+ * Elige una estrategia de armonía al azar.
+ * 🎛️ VIBECODING: Cambia los pesos para favorecer estrategias más suaves o contrastantes.
+ * Actualmente: 30% análoga, 25% complementaria, 25% triádica, 20% split-complementaria
  */
-function generateBackground_Dark() {
-  const h = rand(0, 360);
-  const s = rand(2, 12);    // 🎛️ Un poco más de saturación para fondos oscuros
-  const l = rand(4, 18);    // 🎛️ Luminosidad baja = fondos oscuros profundos
-  return { h, s, l };
-}
-
-/**
- * Genera el color "Primary" — el color principal de acento de la marca.
- * Este es el color más importante y vibrante de la paleta.
- *
- * 🎛️ VIBECODING:
- * - S alta (60-95) → colores muy vívidos y llamativos
- * - S baja (20-50) → tonos más apagados y sofisticados
- * - L media (35-65) → colores que funcionan bien en ambos contextos
- */
-function generatePrimary() {
-  const h = rand(0, 360);    // 🎛️ Hue totalmente libre = cualquier color puede ser primary
-  const s = rand(60, 95);    // 🎛️ Alta saturación = colores vibrantes y de acción
-  const l = rand(35, 65);    // 🎛️ Luminosidad media para versatilidad
-  return { h, s, l };
-}
-
-/**
- * Genera el color "Secondary" — un color complementario al Primary.
- * Suele ser más suave y menos llamativo.
- *
- * 🎛️ VIBECODING:
- * - Actualmente es aleatorio (independiente del primary).
- * - Para hacerlo "armónico": usa (primary.h + 30) % 360 como hue base (color análogo)
- * - Para complementario: usa (primary.h + 180) % 360
- */
-function generateSecondary() {
-  const h = rand(0, 360);    // 🎛️ Libre. Para relacionarlo al primary, usa el hue del primary ± offset
-  const s = rand(15, 50);    // 🎛️ Saturación media-baja = más discreto que el primary
-  const l = rand(40, 70);
-  return { h, s, l };
-}
-
-/**
- * Genera el color "Muted" — muy suave, para fondos de segunda capa o texto secundario.
- *
- * 🎛️ VIBECODING:
- * - S muy baja (0-20) → más gris y neutro (ideal para fondos de tarjetas)
- * - L alta (75-90) → para modo light
- */
-function generateMuted_Light() {
-  const h = rand(0, 360);
-  const s = rand(0, 20);     // 🎛️ Casi sin saturación = el más neutro de todos
-  const l = rand(88, 96);    // 🎛️ Muy claro pero diferente al background
-  return { h, s, l };
-}
-
-function generateMuted_Dark() {
-  const h = rand(0, 360);
-  const s = rand(0, 15);
-  const l = rand(18, 30);    // 🎛️ Un poco más claro que el background dark
-  return { h, s, l };
-}
-
-/**
- * Genera el color "Accent" — para hovers, highlights y elementos interactivos.
- * Puede ser vivaz o sutil.
- *
- * 🎛️ VIBECODING:
- * - Para que sea parecido al primary: usa primary.h ± rand(20, 60)
- * - S y L similares al primary pero ligeramente diferentes
- */
-function generateAccent() {
-  const h = rand(0, 360);
-  const s = rand(50, 90);    // 🎛️ Bastante saturado pero puede variar
-  const l = rand(45, 70);
-  return { h, s, l };
-}
-
-/**
- * Genera el color "Destructive" — para errores, alertas y acciones peligrosas.
- * Casi siempre rojo, pero con variaciones.
- *
- * 🎛️ VIBECODING:
- * - H en rango 0-20 o 340-360 = rojos puros
- * - H en 20-40 = naranjas (más agresivos en dark mode)
- * - Para NUNCA ser rojo: usa H en 30-60 (naranjas/amarillos de advertencia)
- */
-function generateDestructive() {
-  // 🎛️ Elegimos aleatoriamente entre rojo puro o naranja-rojo
-  const useOrange = Math.random() > 0.7; // 30% de veces usa naranja en vez de rojo
-  const h = useOrange ? rand(20, 38) : rand(0, 12);
-  const s = rand(75, 95);    // 🎛️ Alta saturación = alerta clara
-  const l = rand(38, 58);
-  return { h, s, l };
-}
-
-/**
- * Genera el color "Border" — para líneas divisorias y bordes de elementos.
- * Suele ser muy sutil.
- */
-function generateBorder_Light() {
-  const h = rand(0, 360);
-  const s = rand(0, 15);
-  const l = rand(78, 90);    // 🎛️ Ligeramente más oscuro que el muted
-  return { h, s, l };
-}
-
-function generateBorder_Dark() {
-  const h = rand(0, 360);
-  const s = rand(0, 12);
-  const l = rand(22, 35);    // 🎛️ Un poco más claro que el muted dark
-  return { h, s, l };
-}
-
-/**
- * Genera el color "Ring" — anillo de enfoque (outline al hacer focus con teclado).
- * Normalmente es igual o similar al primary para coherencia visual.
- *
- * 🎛️ VIBECODING:
- * - Para que siempre sea el primary: return { ...primary }
- * - Para que sea su complementario: usa (primary.h + 180) % 360
- */
-function generateRing() {
-  const h = rand(0, 360);
-  const s = rand(60, 100);   // 🎛️ Bien saturado para ser visible al hacer foco
-  const l = rand(40, 60);
-  return { h, s, l };
+function pickHarmonyStrategy() {
+  const roll = Math.random();
+  if (roll < 0.30) return 'analogous';
+  if (roll < 0.55) return 'complementary';
+  if (roll < 0.80) return 'triadic';
+  return 'splitComplementary';
 }
 
 // =============================================================================
@@ -298,135 +235,232 @@ function generateRing() {
 // =============================================================================
 
 /**
- * Genera una paleta de colores semántica completa, totalmente aleatoria,
+ * Genera una paleta de colores semántica completa y ARMÓNICA,
  * con variantes para Light Mode y Dark Mode.
  *
- * @returns {Object} - Objeto con todas las variables de color del tema
+ * FLUJO DEL ALGORITMO:
+ *  1. Escoge un HUE BASE al azar (0-360°)
+ *  2. Escoge una ESTRATEGIA DE ARMONÍA al azar
+ *  3. Calcula los hues secundarios según la estrategia
+ *  4. Genera los fondos usando el hue base con saturación MUY baja (tinte sutil)
+ *  5. Genera primary, secondary, accent con los hues armónicos
+ *  6. Genera destructive en la zona de rojos (0-15°) siempre
+ *  7. Calcula automáticamente los foregrounds por contraste WCAG
+ *  8. Genera la variante dark invirtiendo los niveles de lightness
  *
- * ESTRUCTURA DEL OBJETO DEVUELTO:
- * {
- *   name: string          → Nombre autogenerado del tema
- *   id: string            → ID único basado en timestamp
- *   light: {              → Colores para modo claro
- *     background: string,
- *     foreground: string,
- *     primary: string,
- *     "primary-foreground": string,
- *     secondary: string,
- *     "secondary-foreground": string,
- *     muted: string,
- *     "muted-foreground": string,
- *     accent: string,
- *     "accent-foreground": string,
- *     destructive: string,
- *     "destructive-foreground": string,
- *     border: string,
- *     ring: string,
- *   },
- *   dark: { ...same keys }
- *   swatches: string[]    → Array de colores hex para la vista previa rápida
- * }
+ * @returns {Object} Tema completo con light, dark, swatches y metadata
  */
 export function generateTheme() {
-  // --- Generamos los colores base en HSL ---
-  const bgLight  = generateBackground_Light();
-  const bgDark   = generateBackground_Dark();
-  const primary  = generatePrimary();
-  const secondary = generateSecondary();
-  const mutedLight = generateMuted_Light();
-  const mutedDark  = generateMuted_Dark();
-  const accent   = generateAccent();
-  const destructive = generateDestructive();
-  const borderLight = generateBorder_Light();
-  const borderDark  = generateBorder_Dark();
-  const ring     = generateRing();
+  // ── Paso 1: Hue base aleatorio ──────────────────────────────────────────
+  const baseHue = rand(0, 360);
 
-  // --- Calculamos los foregrounds automáticamente (blanco o negro por contraste) ---
-  const fgLight      = getForegroundForBackground(bgLight.h, bgLight.s, bgLight.l);
-  const fgDark       = getForegroundForBackground(bgDark.h, bgDark.s, bgDark.l);
-  const primaryFg    = getForegroundForBackground(primary.h, primary.s, primary.l);
-  const secondaryFg  = getForegroundForBackground(secondary.h, secondary.s, secondary.l);
-  const mutedFgLight = { h: bgLight.h, s: rand(5, 25), l: rand(35, 55) };  // Texto gris medio
-  const mutedFgDark  = { h: bgDark.h,  s: rand(5, 20), l: rand(55, 72) };  // Texto gris claro
-  const accentFg     = getForegroundForBackground(accent.h, accent.s, accent.l);
-  const destFg       = getForegroundForBackground(destructive.h, destructive.s, destructive.l);
+  // ── Paso 2: Estrategia de armonía ───────────────────────────────────────
+  const strategyName = pickHarmonyStrategy();
+  const strategy = HARMONY_STRATEGIES[strategyName];
+  const { secondaryHue, accentHue } = strategy(baseHue);
 
-  // --- Función helper para convertir un objeto {h, s, l} a string HEX ---
+  // ── Paso 3: Generar PRIMARY ─────────────────────────────────────────────
+  // El primary SIEMPRE usa el hue base, es el "color de marca"
+  // 🎛️ VIBECODING:
+  //   - Saturación 55-90: más bajo = más elegante, más alto = más vibrante
+  //   - Lightness 40-60: controla qué tan oscuro/claro es el color primario
+  const primary = {
+    h: baseHue,
+    s: rand(55, 90),
+    l: rand(42, 60),
+  };
+
+  // ── Paso 4: Generar SECONDARY ───────────────────────────────────────────
+  // Usa el hue derivado de la estrategia de armonía.
+  // En Light mode, secondary se usa frecuentemente como fondo de secciones,
+  // así que generamos DOS variantes: una saturada para dark y una pálida para light.
+  // 🎛️ VIBECODING: Saturación más baja que primary para que no compita
+  const secondaryBase = {
+    h: secondaryHue,
+    s: rand(30, 60),
+    l: rand(45, 60),
+  };
+  // Versión light: alta luminosidad, baja saturación → fondo suave
+  const secondaryLight = {
+    h: secondaryHue,
+    s: rand(15, 40),
+    l: rand(88, 95),
+  };
+  // Versión dark: saturación moderada, luminosidad media-baja
+  const secondaryDark = {
+    h: secondaryHue,
+    s: rand(25, 50),
+    l: rand(18, 28),
+  };
+
+  // ── Paso 5: Generar ACCENT ──────────────────────────────────────────────
+  // El accent es el "toque de color" más expresivo.
+  // En light mode se usa como fondo de highlight, en dark mode como color fuerte.
+  // 🎛️ VIBECODING: Sube la saturación para más "pop"
+  const accent = {
+    h: accentHue,
+    s: rand(50, 85),
+    l: rand(48, 65),
+  };
+  // Versión light: pálida para fondos de highlight
+  const accentLight = {
+    h: accentHue,
+    s: rand(20, 45),
+    l: rand(88, 95),
+  };
+  // Versión dark: saturada para fondos de highlight en dark
+  const accentDark = {
+    h: accentHue,
+    s: rand(25, 50),
+    l: rand(18, 28),
+  };
+
+  // ── Paso 6: Generar DESTRUCTIVE ─────────────────────────────────────────
+  // Siempre en la zona roja/naranja para que se interprete como "peligro"
+  // 🎛️ VIBECODING:
+  //   - Hue 0-15: rojo puro
+  //   - Hue 15-30: rojo-naranja (más suave)
+  //   - Hue 350-360: rojo-rosado
+  const destructive = {
+    h: rand(0, 12),
+    s: rand(70, 92),
+    l: rand(40, 55),
+  };
+
+  // ── Paso 7: Generar BACKGROUNDS (Light Mode) ───────────────────────────
+  // Usa el MISMO hue base pero con saturación bajísima → crea un tinte
+  // sutil coherente con toda la paleta. Esta es la clave de la armonía.
+  // 🎛️ VIBECODING:
+  //   - S 2-10: tinte apenas perceptible (recomendado)
+  //   - S 10-20: tinte notable (se siente "coloreado")
+  //   - S 0: gris puro sin tinte
+  const bgLight = {
+    h: baseHue,
+    s: rand(3, 12),     // 🎛️ Tinte muy sutil del hue base
+    l: rand(95, 99),    // 🎛️ Casi blanco
+  };
+
+  // ── Paso 8: Generar BACKGROUNDS (Dark Mode) ────────────────────────────
+  const bgDark = {
+    h: baseHue,
+    s: rand(4, 15),     // 🎛️ Un poco más de tinte en dark mode
+    l: rand(5, 14),     // 🎛️ Casi negro con tinte
+  };
+
+  // ── Paso 9: Generar MUTED (fondos de segunda capa) ─────────────────────
+  // También usa el hue base para coherencia
+  const mutedLight = {
+    h: baseHue,
+    s: rand(5, 18),
+    l: rand(90, 96),    // 🎛️ Ligeramente más oscuro que el background
+  };
+  const mutedDark = {
+    h: baseHue,
+    s: rand(5, 15),
+    l: rand(14, 24),    // 🎛️ Ligeramente más claro que el background dark
+  };
+
+  // ── Paso 10: Generar BORDER ────────────────────────────────────────────
+  const borderLight = {
+    h: baseHue,
+    s: rand(3, 15),
+    l: rand(82, 92),    // 🎛️ Entre el muted y el background
+  };
+  const borderDark = {
+    h: baseHue,
+    s: rand(3, 12),
+    l: rand(20, 32),
+  };
+
+  // ── Paso 11: RING (foco de teclado) = misma familia que primary ────────
+  const ring = {
+    h: baseHue,
+    s: rand(60, 90),
+    l: rand(45, 60),
+  };
+
+  // ── Paso 12: FOREGROUNDS automáticos por contraste ─────────────────────
+  const fgLight           = autoForeground(bgLight.h, bgLight.s, bgLight.l);
+  const fgDark            = autoForeground(bgDark.h, bgDark.s, bgDark.l);
+  const primaryFg         = autoForeground(primary.h, primary.s, primary.l);
+  const secondaryFgLight  = autoForeground(secondaryLight.h, secondaryLight.s, secondaryLight.l);
+  const secondaryFgDark   = autoForeground(secondaryDark.h, secondaryDark.s, secondaryDark.l);
+  const accentFgLight     = autoForeground(accentLight.h, accentLight.s, accentLight.l);
+  const accentFgDark      = autoForeground(accentDark.h, accentDark.s, accentDark.l);
+  const destructiveFg     = autoForeground(destructive.h, destructive.s, destructive.l);
+
+  // Muted foreground: texto gris medio/suave, usa el hue base para coherencia
+  const mutedFgLight = { h: baseHue, s: rand(5, 15), l: rand(35, 50) };
+  const mutedFgDark  = { h: baseHue, s: rand(5, 15), l: rand(55, 70) };
+
+  // ── Helper: convierte {h,s,l} a HEX ───────────────────────────────────
   const hex = ({ h, s, l }) => hslToHex(h, s, l);
 
-  // --- Construimos el objeto final ---
-  const theme = {
+  // ── Construimos el tema final ──────────────────────────────────────────
+  return {
     name: generateThemeName(),
     id: `theme_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    harmony: strategyName, // Metadata: qué estrategia se usó
+    baseHue: Math.round(baseHue),
     light: {
       'background':            hex(bgLight),
       'foreground':            hex(fgLight),
       'primary':               hex(primary),
       'primary-foreground':    hex(primaryFg),
-      'secondary':             hex(secondary),
-      'secondary-foreground':  hex(secondaryFg),
+      'secondary':             hex(secondaryLight),
+      'secondary-foreground':  hex(secondaryFgLight),
       'muted':                 hex(mutedLight),
       'muted-foreground':      hex(mutedFgLight),
-      'accent':                hex(accent),
-      'accent-foreground':     hex(accentFg),
+      'accent':                hex(accentLight),
+      'accent-foreground':     hex(accentFgLight),
       'destructive':           hex(destructive),
-      'destructive-foreground': hex(destFg),
+      'destructive-foreground': hex(destructiveFg),
       'border':                hex(borderLight),
       'ring':                  hex(ring),
     },
     dark: {
       'background':            hex(bgDark),
       'foreground':            hex(fgDark),
-      'primary':               hex(primary),          // Primary se mantiene en ambos modos
+      'primary':               hex(primary),
       'primary-foreground':    hex(primaryFg),
-      'secondary':             hex(secondary),
-      'secondary-foreground':  hex(secondaryFg),
+      'secondary':             hex(secondaryDark),
+      'secondary-foreground':  hex(secondaryFgDark),
       'muted':                 hex(mutedDark),
       'muted-foreground':      hex(mutedFgDark),
-      'accent':                hex(accent),
-      'accent-foreground':     hex(accentFg),
+      'accent':                hex(accentDark),
+      'accent-foreground':     hex(accentFgDark),
       'destructive':           hex(destructive),
-      'destructive-foreground': hex(destFg),
+      'destructive-foreground': hex(destructiveFg),
       'border':                hex(borderDark),
       'ring':                  hex(ring),
     },
-    // Swatches: colores representativos para la tarjeta de historial
     swatches: [
       hex(bgLight),
       hex(primary),
-      hex(secondary),
+      hex(secondaryBase),
       hex(accent),
       hex(destructive),
       hex(mutedLight),
     ],
   };
-
-  return theme;
 }
 
 // =============================================================================
-// GENERADOR DE NOMBRES DE TEMAS
+// NOMBRES DE TEMAS
 // =============================================================================
 
-/**
- * Genera nombres aleatorios poéticos para los temas.
- * Combina un adjetivo + un sustantivo para crear nombres únicos y evocadores.
- *
- * 🎛️ VIBECODING: Añade o modifica las listas de adjetivos/sustantivos
- * para cambiar el "vocabulario" de nombres generados.
- */
 const ADJECTIVES = [
   'Arctic', 'Velvet', 'Neon', 'Cosmic', 'Ember', 'Frosted', 'Golden',
   'Midnight', 'Crimson', 'Electric', 'Mystic', 'Solar', 'Lunar', 'Obsidian',
   'Pearl', 'Jade', 'Copper', 'Indigo', 'Sage', 'Slate', 'Rust', 'Ivory',
-  'Cobalt', 'Amber', 'Violet', 'Teal', 'Scarlet', 'Onyx', 'Silver', 'Citrus'
+  'Cobalt', 'Amber', 'Violet', 'Teal', 'Scarlet', 'Onyx', 'Silver', 'Citrus',
 ];
 
 const NOUNS = [
   'Dawn', 'Wave', 'Pulse', 'Storm', 'Bloom', 'Drift', 'Glow', 'Spark',
   'Echo', 'Haze', 'Tide', 'Flare', 'Shade', 'Crest', 'Veil', 'Mist',
   'Peak', 'Void', 'Aura', 'Flux', 'Core', 'Edge', 'Depth', 'Trace',
-  'Beam', 'Rift', 'Surge', 'Blaze', 'Flow', 'Dust'
+  'Beam', 'Rift', 'Surge', 'Blaze', 'Flow', 'Dust',
 ];
 
 function generateThemeName() {
@@ -439,33 +473,24 @@ function generateThemeName() {
 // EXPORTACIÓN DE CÓDIGO
 // =============================================================================
 
-/**
- * Genera el código CSS para Tailwind v4 (@theme block).
- * @param {Object} theme - Objeto de tema generado por generateTheme()
- * @returns {string} - Código CSS listo para pegar en global.css
- */
 export function exportTailwindV4(theme) {
   const { light, dark } = theme;
-
-  const lightVars = Object.entries(light)
-    .map(([key, val]) => `  --color-${key}: var(--${key});`)
+  const themeVars = Object.entries(light)
+    .map(([key]) => `  --color-${key}: var(--${key});`)
     .join('\n');
-
   const lightTokens = Object.entries(light)
     .map(([key, val]) => `  --${key}: ${val};`)
     .join('\n');
-
   const darkTokens = Object.entries(dark)
     .map(([key, val]) => `  --${key}: ${val};`)
     .join('\n');
 
-  return `/* Theme: ${theme.name} — Generated by Armonic Themes */
-/* Paste this in your global.css */
+  return `/* ${theme.name} — Armonic Themes (${theme.harmony}) */
 
 @import "tailwindcss";
 
 @theme {
-${lightVars}
+${themeVars}
 }
 
 :root {
@@ -477,23 +502,16 @@ ${darkTokens}
 }`;
 }
 
-/**
- * Genera variables CSS puras (sin Tailwind).
- * @param {Object} theme - Objeto de tema generado por generateTheme()
- * @returns {string} - Código CSS con variables CSS nativas
- */
 export function exportCSSVariables(theme) {
   const { light, dark } = theme;
-
   const lightTokens = Object.entries(light)
     .map(([key, val]) => `  --${key}: ${val};`)
     .join('\n');
-
   const darkTokens = Object.entries(dark)
     .map(([key, val]) => `  --${key}: ${val};`)
     .join('\n');
 
-  return `/* Theme: ${theme.name} — Generated by Armonic Themes */
+  return `/* ${theme.name} — Armonic Themes (${theme.harmony}) */
 
 :root {
 ${lightTokens}
@@ -504,28 +522,19 @@ ${darkTokens}
 }`;
 }
 
-/**
- * Genera la configuración para Tailwind CSS v3 (tailwind.config.js).
- * @param {Object} theme - Objeto de tema generado por generateTheme()
- * @returns {string} - Código JS para tailwind.config.js
- */
 export function exportTailwindV3(theme) {
   const { light } = theme;
-
   const colorEntries = Object.entries(light)
-    .map(([key, val]) => `      '${key}': 'var(--${key})',`)
+    .map(([key]) => `      '${key}': 'var(--${key})',`)
     .join('\n');
-
   const lightTokens = Object.entries(light)
     .map(([key, val]) => `    '--${key}': '${val}',`)
     .join('\n');
-
   const darkTokens = Object.entries(theme.dark)
     .map(([key, val]) => `      '--${key}': '${val}',`)
     .join('\n');
 
-  return `// Theme: ${theme.name} — Generated by Armonic Themes
-// tailwind.config.js
+  return `// ${theme.name} — Armonic Themes (${theme.harmony})
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

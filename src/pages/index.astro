@@ -1,11 +1,428 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
-	<Welcome />
+  <!-- HERO / LANDING SECTION -->
+  <section id="hero" style="position:relative;overflow:hidden;padding:5rem 2rem 4rem;text-align:center;border-bottom:1px solid var(--color-app-border);">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(167,139,250,0.18) 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 80% 80%,rgba(56,189,248,0.1) 0%,transparent 60%);pointer-events:none;"></div>
+
+    <span class="badge badge-accent animate-fade-in" style="margin-bottom:1.5rem;">v1.0 — Free & Open Source</span>
+    <h1 style="font-size:clamp(2.4rem,6vw,4.5rem);font-weight:900;line-height:1.05;letter-spacing:-0.03em;margin-bottom:1rem;">
+      <span class="gradient-text">Armonic</span> Themes
+    </h1>
+    <p style="font-size:clamp(1rem,2vw,1.25rem);color:var(--color-app-muted);max-width:540px;margin:0 auto 2.5rem;line-height:1.6;">
+      Genera paletas de color semánticas hermosas y accesibles en segundos. Exporta a Tailwind v4, CSS puro o Tailwind v3.
+    </p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <button id="hero-generate-btn" class="btn btn-primary" style="font-size:1rem;padding:0.8rem 2rem;">
+        ✦ Generar Tema Aleatorio
+      </button>
+      <a href="#app" class="btn btn-ghost" style="font-size:1rem;padding:0.8rem 2rem;">Ver Generador ↓</a>
+    </div>
+
+    <!-- Feature badges -->
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-top:3rem;">
+      {['14 variables semánticas','Light + Dark mode','3 formatos de exportación','Historial de sesión','Favoritos guardados'].map(f => (
+        <span style="font-size:0.75rem;padding:0.3rem 0.8rem;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid var(--color-app-border);color:var(--color-app-muted);">{f}</span>
+      ))}
+    </div>
+  </section>
+
+  <!-- MAIN APP -->
+  <section id="app" style="max-width:1600px;margin:0 auto;padding:2rem;">
+    <div id="app-grid" style="display:grid;grid-template-columns:320px 1fr 340px;gap:1.5rem;align-items:start;">
+
+      <!-- === LEFT PANEL: Controls + History === -->
+      <aside id="left-panel" style="position:sticky;top:1rem;display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- Generate Card -->
+        <div class="glass" style="border-radius:var(--radius-lg);padding:1.5rem;">
+          <p class="section-title" style="margin-bottom:1rem;">Generador</p>
+          <button id="generate-btn" class="btn btn-primary" style="width:100%;font-size:1rem;padding:0.9rem;">
+            ✦ Generar Nuevo Tema
+          </button>
+          <p style="font-size:0.75rem;color:var(--color-app-muted);text-align:center;margin-top:0.75rem;" id="theme-count-label">0 temas generados esta sesión</p>
+
+          <!-- Current Theme Name -->
+          <div style="margin-top:1.25rem;padding:1rem;background:var(--color-app-bg);border-radius:var(--radius-md);border:1px solid var(--color-app-border);">
+            <p class="section-title" style="margin-bottom:0.4rem;">Tema Activo</p>
+            <p id="current-theme-name" style="font-size:1.1rem;font-weight:700;color:var(--color-app-text);">—</p>
+          </div>
+
+          <!-- Swatch preview -->
+          <div id="current-swatches" class="swatch-row" style="margin-top:1rem;height:36px;border-radius:var(--radius-md);overflow:hidden;"></div>
+
+          <!-- Save to favorites -->
+          <button id="save-btn" class="btn btn-ghost" style="width:100%;margin-top:0.75rem;" disabled>
+            ★ Guardar en Favoritos
+          </button>
+        </div>
+
+        <!-- Theme History -->
+        <div class="glass" style="border-radius:var(--radius-lg);padding:1.25rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+            <p class="section-title">Historial</p>
+            <button id="clear-history-btn" class="btn btn-ghost" style="font-size:0.7rem;padding:0.25rem 0.6rem;" disabled>Limpiar</button>
+          </div>
+          <div id="history-list" style="display:flex;flex-direction:column;gap:0.5rem;max-height:400px;overflow-y:auto;padding-right:2px;">
+            <p id="history-empty" style="font-size:0.8rem;color:var(--color-app-muted);text-align:center;padding:1.5rem 0;">
+              Genera tu primer tema para empezar
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- === CENTER: Preview === -->
+      <main style="display:flex;flex-direction:column;gap:1rem;">
+        <!-- Preview Mode Toggle -->
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <p class="section-title">Vista Previa</p>
+          <div class="tabs" style="width:auto;">
+            <button class="tab active" id="tab-light" data-mode="light">☀ Light</button>
+            <button class="tab" id="tab-dark" data-mode="dark">☾ Dark</button>
+          </div>
+        </div>
+
+        <!-- Preview Container -->
+        <div id="preview-wrapper" class="glass" style="border-radius:var(--radius-lg);overflow:hidden;min-height:560px;">
+          <div class="preview-root" id="preview-root" style="height:100%;min-height:560px;padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem;">
+
+            <!-- Preview Navbar -->
+            <nav style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border-radius:8px;background-color:var(--primary);color:var(--primary-foreground);">
+              <span style="font-weight:700;font-size:0.95rem;">MyApp</span>
+              <div style="display:flex;gap:1rem;font-size:0.8rem;opacity:0.85;">
+                <span>Inicio</span><span>Acerca</span><span>Precios</span>
+              </div>
+              <button style="background:var(--primary-foreground);color:var(--primary);border:none;border-radius:6px;padding:0.3rem 0.85rem;font-size:0.8rem;font-weight:600;cursor:pointer;">Login</button>
+            </nav>
+
+            <!-- Preview Hero -->
+            <div style="padding:2rem 1.5rem;border-radius:8px;background-color:var(--secondary);border:1px solid var(--border);">
+              <p style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:0.5rem;">Bienvenido</p>
+              <h2 style="font-size:1.6rem;font-weight:800;color:var(--foreground);margin-bottom:0.75rem;line-height:1.2;">Construye algo increíble hoy</h2>
+              <p style="color:var(--muted-foreground);font-size:0.875rem;margin-bottom:1.25rem;line-height:1.6;">Una descripción que convence. Esta paleta hace que todo luzca coherente y profesional.</p>
+              <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <button style="background:var(--primary);color:var(--primary-foreground);border:none;border-radius:6px;padding:0.55rem 1.25rem;font-weight:600;font-size:0.85rem;cursor:pointer;">Empezar Gratis</button>
+                <button style="background:transparent;color:var(--foreground);border:1px solid var(--border);border-radius:6px;padding:0.55rem 1.25rem;font-size:0.85rem;cursor:pointer;">Ver Demo</button>
+              </div>
+            </div>
+
+            <!-- Preview Cards Row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
+              <div style="padding:1rem;border-radius:8px;background-color:var(--background);border:1px solid var(--border);">
+                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--accent);margin-bottom:0.75rem;"></div>
+                <p style="font-weight:600;font-size:0.875rem;color:var(--foreground);margin-bottom:0.3rem;">Diseño</p>
+                <p style="font-size:0.75rem;color:var(--muted-foreground);">Hermoso y consistente en toda la interfaz.</p>
+              </div>
+              <div style="padding:1rem;border-radius:8px;background-color:var(--background);border:1px solid var(--border);">
+                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--primary);margin-bottom:0.75rem;"></div>
+                <p style="font-weight:600;font-size:0.875rem;color:var(--foreground);margin-bottom:0.3rem;">Accesible</p>
+                <p style="font-size:0.75rem;color:var(--muted-foreground);">Contraste garantizado en cada combinación.</p>
+              </div>
+              <div style="padding:1rem;border-radius:8px;background-color:var(--background);border:1px solid var(--border);">
+                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--secondary);border:1px solid var(--border);margin-bottom:0.75rem;"></div>
+                <p style="font-weight:600;font-size:0.875rem;color:var(--foreground);margin-bottom:0.3rem;">Escalable</p>
+                <p style="font-size:0.75rem;color:var(--muted-foreground);">Variables semánticas listas para producción.</p>
+              </div>
+            </div>
+
+            <!-- Preview Form + Alert Row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+              <div style="padding:1rem;border-radius:8px;background-color:var(--muted);border:1px solid var(--border);display:flex;flex-direction:column;gap:0.6rem;">
+                <label style="font-size:0.75rem;font-weight:600;color:var(--muted-foreground);">Email</label>
+                <div style="padding:0.45rem 0.75rem;border-radius:6px;background:var(--background);border:1px solid var(--border);font-size:0.8rem;color:var(--muted-foreground);">usuario@email.com</div>
+                <button style="background:var(--primary);color:var(--primary-foreground);border:none;border-radius:6px;padding:0.5rem;font-size:0.8rem;font-weight:600;cursor:pointer;">Suscribirse</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                <div style="padding:0.75rem;border-radius:8px;background-color:var(--accent);border:1px solid var(--border);font-size:0.8rem;color:var(--accent-foreground);">✓ Operación completada con éxito.</div>
+                <div style="padding:0.75rem;border-radius:8px;background-color:var(--destructive);border:1px solid var(--border);font-size:0.8rem;color:var(--destructive-foreground);">✕ Algo salió mal. Intenta de nuevo.</div>
+                <div style="padding:0.75rem;border-radius:8px;background-color:var(--secondary);border:1px solid var(--border);font-size:0.8rem;color:var(--secondary-foreground);">ℹ Información secundaria aquí.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+
+      <!-- === RIGHT PANEL: Export + Favorites === -->
+      <aside style="position:sticky;top:1rem;display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- Export Panel -->
+        <div class="glass" style="border-radius:var(--radius-lg);padding:1.25rem;">
+          <p class="section-title" style="margin-bottom:1rem;">Exportar Código</p>
+          <div class="tabs" style="margin-bottom:1rem;">
+            <button class="tab active" data-export="tw4">TW v4</button>
+            <button class="tab" data-export="css">CSS</button>
+            <button class="tab" data-export="tw3">TW v3</button>
+          </div>
+          <div style="position:relative;">
+            <pre class="code-block" id="export-code"><code id="export-content" style="white-space:pre-wrap;">Genera un tema para ver el código...</code></pre>
+            <button class="copy-btn" id="copy-btn">Copiar</button>
+          </div>
+        </div>
+
+        <!-- Color Table -->
+        <div class="glass" style="border-radius:var(--radius-lg);padding:1.25rem;">
+          <p class="section-title" style="margin-bottom:0.75rem;">Tabla de Colores</p>
+          <div id="color-table" style="display:flex;flex-direction:column;gap:0.4rem;">
+            <p style="font-size:0.78rem;color:var(--color-app-muted);">Genera un tema para ver los colores</p>
+          </div>
+        </div>
+
+        <!-- Favorites Panel -->
+        <div class="glass" style="border-radius:var(--radius-lg);padding:1.25rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+            <p class="section-title">★ Favoritos</p>
+            <button id="clear-favs-btn" class="btn btn-danger" style="font-size:0.7rem;padding:0.25rem 0.6rem;" disabled>Limpiar todo</button>
+          </div>
+          <!-- Warning Banner -->
+          <div class="warning-banner" style="margin-bottom:0.75rem;">
+            <span style="font-size:1rem;flex-shrink:0;">⚠</span>
+            <span><strong>Almacenamiento temporal.</strong> Los favoritos se guardan en tu navegador y se perderán si limpias el historial. Usa la exportación para conservarlos en tu proyecto.</span>
+          </div>
+          <div id="favorites-list" style="display:flex;flex-direction:column;gap:0.5rem;max-height:320px;overflow-y:auto;">
+            <p id="favs-empty" style="font-size:0.8rem;color:var(--color-app-muted);text-align:center;padding:1rem 0;">
+              No hay favoritos guardados aún
+            </p>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="text-align:center;padding:2.5rem 1rem;color:var(--color-app-muted);font-size:0.8rem;border-top:1px solid var(--color-app-border);margin-top:3rem;">
+    <p>Hecho con ♥ por <strong style="color:var(--color-app-accent);">devcito</strong> · Armonic Themes</p>
+    <p style="margin-top:0.4rem;opacity:0.6;">Los colores se generan aleatoriamente usando el espacio HSL con contraste WCAG garantizado.</p>
+  </footer>
 </Layout>
+
+<style>
+  @media (max-width: 1200px) {
+    #app-grid { grid-template-columns: 280px 1fr !important; }
+    aside:last-child { grid-column: 1 / -1; }
+  }
+  @media (max-width: 768px) {
+    #app-grid { grid-template-columns: 1fr !important; }
+    #left-panel { position: static !important; }
+  }
+</style>
+
+<script type="module">
+  import { generateTheme, exportTailwindV4, exportCSSVariables, exportTailwindV3 } from '/src/scripts/color-algorithm.js';
+  import { addToHistory, getHistory, clearHistory, saveFavorite, getFavorites, deleteFavorite, clearAllFavorites, isFavorite } from '/src/scripts/theme-store.js';
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let currentTheme = null;
+  let currentMode = 'light';  // 'light' | 'dark'
+  let currentExport = 'tw4';  // 'tw4' | 'css' | 'tw3'
+  let sessionCount = 0;
+
+  // ── DOM refs ───────────────────────────────────────────────────────────────
+  const previewRoot       = document.getElementById('preview-root');
+  const currentSwatches   = document.getElementById('current-swatches');
+  const currentThemeName  = document.getElementById('current-theme-name');
+  const themeCountLabel   = document.getElementById('theme-count-label');
+  const exportContent     = document.getElementById('export-content');
+  const copyBtn           = document.getElementById('copy-btn');
+  const saveBtn           = document.getElementById('save-btn');
+  const historyList       = document.getElementById('history-list');
+  const historyEmpty      = document.getElementById('history-empty');
+  const clearHistoryBtn   = document.getElementById('clear-history-btn');
+  const favoritesList     = document.getElementById('favorites-list');
+  const favsEmpty         = document.getElementById('favs-empty');
+  const clearFavsBtn      = document.getElementById('clear-favs-btn');
+  const colorTable        = document.getElementById('color-table');
+
+  // ── Apply theme to preview ─────────────────────────────────────────────────
+  function applyThemeToPreview(theme, mode) {
+    const colors = theme[mode];
+    Object.entries(colors).forEach(([key, val]) => {
+      previewRoot.style.setProperty(`--${key}`, val);
+    });
+  }
+
+  // ── Update export code ─────────────────────────────────────────────────────
+  function updateExportCode() {
+    if (!currentTheme) return;
+    let code = '';
+    if (currentExport === 'tw4') code = exportTailwindV4(currentTheme);
+    else if (currentExport === 'css') code = exportCSSVariables(currentTheme);
+    else code = exportTailwindV3(currentTheme);
+    exportContent.textContent = code;
+  }
+
+  // ── Update color table ─────────────────────────────────────────────────────
+  function updateColorTable(theme) {
+    const colors = theme[currentMode];
+    colorTable.innerHTML = Object.entries(colors).map(([key, val]) => `
+      <div style="display:flex;align-items:center;gap:0.6rem;padding:0.3rem 0;">
+        <div style="width:28px;height:28px;border-radius:5px;background:${val};border:1px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:0.7rem;font-weight:600;color:var(--color-app-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${key}</p>
+          <p style="font-size:0.65rem;color:var(--color-app-muted);font-family:var(--font-mono);">${val}</p>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Render swatches ────────────────────────────────────────────────────────
+  function renderSwatches(swatches, container) {
+    container.innerHTML = swatches.map(c =>
+      `<div class="swatch" style="background:${c};"></div>`
+    ).join('');
+  }
+
+  // ── Create theme card element ──────────────────────────────────────────────
+  function createThemeCard(theme, isActive = false) {
+    const div = document.createElement('div');
+    div.className = `theme-card animate-card-in${isActive ? ' active' : ''}`;
+    div.dataset.themeId = theme.id;
+    div.innerHTML = `
+      <div class="swatch-row" style="height:22px;">
+        ${theme.swatches.map(c => `<div class="swatch" style="background:${c};"></div>`).join('')}
+      </div>
+      <p style="font-size:0.75rem;font-weight:600;color:var(--color-app-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${theme.name}</p>
+    `;
+    div.addEventListener('click', () => loadTheme(theme));
+    return div;
+  }
+
+  // ── Create favorites card ──────────────────────────────────────────────────
+  function createFavCard(theme) {
+    const div = document.createElement('div');
+    div.className = 'theme-card animate-card-in';
+    div.dataset.themeId = theme.id;
+    div.innerHTML = `
+      <div class="swatch-row" style="height:22px;">
+        ${theme.swatches.map(c => `<div class="swatch" style="background:${c};"></div>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.4rem;">
+        <p style="font-size:0.75rem;font-weight:600;color:var(--color-app-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${theme.name}</p>
+        <button data-delete-id="${theme.id}" style="font-size:0.65rem;padding:0.15rem 0.45rem;border-radius:4px;background:rgba(248,113,113,0.1);color:var(--color-app-danger);border:1px solid rgba(248,113,113,0.2);cursor:pointer;flex-shrink:0;">✕</button>
+      </div>
+    `;
+    div.querySelector('[data-delete-id]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteFavorite(theme.id);
+      renderFavorites();
+    });
+    div.addEventListener('click', () => loadTheme(theme));
+    return div;
+  }
+
+  // ── Load theme (from history or favorites) ─────────────────────────────────
+  function loadTheme(theme) {
+    currentTheme = theme;
+    currentThemeName.textContent = theme.name;
+    renderSwatches(theme.swatches, currentSwatches);
+    applyThemeToPreview(theme, currentMode);
+    updateColorTable(theme);
+    updateExportCode();
+    saveBtn.disabled = false;
+    // Update active state in history
+    document.querySelectorAll('.theme-card').forEach(c => {
+      c.classList.toggle('active', c.dataset.themeId === theme.id);
+    });
+    // Check if already saved
+    saveBtn.textContent = isFavorite(theme.id) ? '★ Guardado' : '★ Guardar en Favoritos';
+  }
+
+  // ── Render history ─────────────────────────────────────────────────────────
+  function renderHistory() {
+    const items = getHistory();
+    historyEmpty.style.display = items.length ? 'none' : 'block';
+    clearHistoryBtn.disabled = items.length === 0;
+    const existing = historyList.querySelectorAll('.theme-card');
+    existing.forEach(el => el.remove());
+    items.forEach((t, i) => {
+      const card = createThemeCard(t, currentTheme?.id === t.id);
+      card.style.animationDelay = `${i * 30}ms`;
+      historyList.appendChild(card);
+    });
+  }
+
+  // ── Render favorites ───────────────────────────────────────────────────────
+  function renderFavorites() {
+    const items = getFavorites();
+    favsEmpty.style.display = items.length ? 'none' : 'block';
+    clearFavsBtn.disabled = items.length === 0;
+    const existing = favoritesList.querySelectorAll('.theme-card');
+    existing.forEach(el => el.remove());
+    items.forEach(t => favoritesList.appendChild(createFavCard(t)));
+  }
+
+  // ── Generate ───────────────────────────────────────────────────────────────
+  function doGenerate() {
+    const theme = generateTheme();
+    addToHistory(theme);
+    sessionCount++;
+    themeCountLabel.textContent = `${sessionCount} tema${sessionCount !== 1 ? 's' : ''} generado${sessionCount !== 1 ? 's' : ''} esta sesión`;
+    loadTheme(theme);
+    renderHistory();
+  }
+
+  // ── Event listeners ────────────────────────────────────────────────────────
+  document.getElementById('generate-btn').addEventListener('click', doGenerate);
+  document.getElementById('hero-generate-btn').addEventListener('click', () => {
+    doGenerate();
+    document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  saveBtn.addEventListener('click', () => {
+    if (!currentTheme) return;
+    const saved = saveFavorite(currentTheme);
+    saveBtn.textContent = saved ? '★ Guardado' : '★ Ya en Favoritos';
+    if (saved) renderFavorites();
+  });
+
+  clearHistoryBtn.addEventListener('click', () => {
+    clearHistory();
+    renderHistory();
+  });
+
+  clearFavsBtn.addEventListener('click', () => {
+    if (confirm('¿Borrar todos los temas guardados? Esta acción no se puede deshacer.')) {
+      clearAllFavorites();
+      renderFavorites();
+    }
+  });
+
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(exportContent.textContent).then(() => {
+      copyBtn.textContent = '✓ Copiado';
+      copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copiar'; copyBtn.classList.remove('copied'); }, 2000);
+    });
+  });
+
+  // Mode tabs
+  document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = btn.dataset.mode;
+      if (currentTheme) {
+        applyThemeToPreview(currentTheme, currentMode);
+        updateColorTable(currentTheme);
+      }
+    });
+  });
+
+  // Export tabs
+  document.querySelectorAll('[data-export]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-export]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentExport = btn.dataset.export;
+      updateExportCode();
+    });
+  });
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  renderFavorites();
+  doGenerate(); // Generar un tema automáticamente al cargar
+</script>
