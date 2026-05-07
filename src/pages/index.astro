@@ -3,6 +3,9 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout>
+  <!-- BACKGROUND GRID OVERLAY -->
+  <div class="bg-grid"></div>
+
   <!-- STICKY NAV -->
   <nav id="main-nav">
     <div class="nav-inner">
@@ -368,7 +371,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="swatch-grid sg-small">${buildSwatchGrid(colors)}</div>
       <p class="theme-card-name">${theme.name}</p>
     `;
-    div.addEventListener('click', () => loadTheme(theme));
+    div.addEventListener('click', () => loadTheme(theme, true));
     return div;
   }
 
@@ -390,12 +393,12 @@ import Layout from '../layouts/Layout.astro';
       deleteFavorite(theme.id);
       renderFavorites();
     });
-    div.addEventListener('click', () => loadTheme(theme));
+    div.addEventListener('click', () => loadTheme(theme, true));
     return div;
   }
 
   // ── Load theme ────────────────────────────────────────────────────────────
-  function loadTheme(theme) {
+  function loadTheme(theme, scrollToPreview = false) {
     currentTheme = theme;
     currentThemeName.textContent = theme.name;
     genBadges.innerHTML = `
@@ -411,6 +414,10 @@ import Layout from '../layouts/Layout.astro';
       c.classList.toggle('active', c.dataset.themeId === theme.id);
     });
     saveBtn.textContent = isFavorite(theme.id) ? '★ Guardado' : '★ Guardar en Favoritos';
+    
+    if (scrollToPreview) {
+      document.getElementById('generator').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   // ── Render history ────────────────────────────────────────────────────────
