@@ -121,17 +121,17 @@ function getLuminance(h, s, l) {
 /**
  * Dado un color de fondo, devuelve un foreground que garantice contraste legible.
  * Devuelve casi-negro o casi-blanco dependiendo de la luminancia del fondo.
- *
- * 🎛️ VIBECODING:
- * - Umbral 0.179 = el punto medio estándar de la percepción humana
- * - Subir el umbral (ej. 0.3) = usa blanco más a menudo
- * - Bajarlo (ej. 0.1) = usa negro más a menudo
+ * Acepta tintes independientes para dark y light para mayor variedad.
  */
-function autoForeground(h, s, l, baseHue = h) {
+function autoForeground(h, s, l, darkTint = h, lightTint = h) {
   const lum = getLuminance(h, s, l);
+  // Pequeña variación adicional al hue para que no sea EXACTAMENTE el mismo siempre
+  const finalDarkTint = normHue(darkTint + rand(-15, 15));
+  const finalLightTint = normHue(lightTint + rand(-10, 10));
+  
   return lum > 0.179
-    ? { h: baseHue, s: rand(15, 30), l: rand(4, 12) }   // Fondo claro → oscuro teñido
-    : { h: baseHue, s: rand(5, 20), l: rand(93, 98) };  // Fondo oscuro → claro teñido
+    ? { h: finalDarkTint, s: rand(15, 45), l: rand(2, 12) }   // Fondo claro → oscuro teñido
+    : { h: finalLightTint, s: rand(5, 25), l: rand(92, 98) };  // Fondo oscuro → claro teñido
 }
 
 // =============================================================================
@@ -175,8 +175,8 @@ const HARMONY_STRATEGIES = {
    */
   analogous(baseHue) {
     const direction = Math.random() > 0.5 ? 1 : -1; // Hacia la izquierda o derecha de la rueda
-    const offset1 = rand(20, 45) * direction;
-    const offset2 = rand(35, 65) * direction;
+    const offset1 = rand(20, 50) * direction;
+    const offset2 = rand(40, 80) * direction;
     return {
       secondaryHue: normHue(baseHue + offset1),
       accentHue:    normHue(baseHue + offset2),
@@ -189,10 +189,10 @@ const HARMONY_STRATEGIES = {
    * demasiado caótico. Solo el accent salta al otro lado.
    */
   complementary(baseHue) {
-    const secondaryOffset = rand(-25, 25);
+    const secondaryOffset = rand(-35, 35);
     return {
       secondaryHue: normHue(baseHue + secondaryOffset),
-      accentHue:    normHue(baseHue + 180 + rand(-15, 15)), // Complementario ± variación
+      accentHue:    normHue(baseHue + 180 + rand(-20, 20)), // Complementario ± variación
     };
   },
 
@@ -201,8 +201,8 @@ const HARMONY_STRATEGIES = {
    */
   triadic(baseHue) {
     return {
-      secondaryHue: normHue(baseHue + 120 + rand(-15, 15)),
-      accentHue:    normHue(baseHue + 240 + rand(-15, 15)),
+      secondaryHue: normHue(baseHue + 120 + rand(-20, 20)),
+      accentHue:    normHue(baseHue + 240 + rand(-20, 20)),
     };
   },
 
@@ -211,23 +211,44 @@ const HARMONY_STRATEGIES = {
    */
   splitComplementary(baseHue) {
     return {
-      secondaryHue: normHue(baseHue + 150 + rand(-10, 10)),
-      accentHue:    normHue(baseHue + 210 + rand(-10, 10)),
+      secondaryHue: normHue(baseHue + 150 + rand(-15, 15)),
+      accentHue:    normHue(baseHue + 210 + rand(-15, 15)),
     };
   },
+
+  /**
+   * TETRÁDICA: 4 colores (secundario a 90, acento a 270).
+   */
+  tetradic(baseHue) {
+    return {
+      secondaryHue: normHue(baseHue + 90 + rand(-15, 15)),
+      accentHue:    normHue(baseHue + 270 + rand(-15, 15)),
+    };
+  },
+
+  /**
+   * CHAOTIC: Completamente aleatorio para romper la monotonía ("secuencias repetidas").
+   */
+  chaotic(baseHue) {
+    return {
+      secondaryHue: rand(0, 360),
+      accentHue:    rand(0, 360),
+    };
+  }
 };
 
 /**
  * Elige una estrategia de armonía al azar.
  * 🎛️ VIBECODING: Cambia los pesos para favorecer estrategias más suaves o contrastantes.
- * Actualmente: 30% análoga, 25% complementaria, 25% triádica, 20% split-complementaria
  */
 function pickHarmonyStrategy() {
   const roll = Math.random();
-  if (roll < 0.30) return 'analogous';
-  if (roll < 0.55) return 'complementary';
-  if (roll < 0.80) return 'triadic';
-  return 'splitComplementary';
+  if (roll < 0.25) return 'analogous';
+  if (roll < 0.45) return 'complementary';
+  if (roll < 0.65) return 'triadic';
+  if (roll < 0.80) return 'splitComplementary';
+  if (roll < 0.90) return 'tetradic';
+  return 'chaotic';
 }
 
 // =============================================================================
@@ -370,8 +391,14 @@ function pickMood() {
  * @returns {Object} Tema completo con light, dark, swatches y metadata
  */
 export function generateTheme(options = {}) {
-  // ── Paso 1: Hue base aleatorio o manual ──────────────────────────────────
-  const baseHue = options.baseHue !== undefined ? options.baseHue : rand(0, 360);
+  // ── Paso 1: Hue base (Filtro Anti-Verde-Tóxico) ─────────────────────────
+  let baseHue = options.baseHue !== undefined ? options.baseHue : rand(0, 360);
+  // Si el hue es aleatorio y cae en la zona del "verde chillón feo" (90-140),
+  // lo empujamos hacia un verde menta/turquesa elegante (150-170) o amarillo/lima (60-80).
+  // Solo lo aplicamos un 70% de las veces para permitir también colores crudos y más variados.
+  if (options.baseHue === undefined && baseHue > 90 && baseHue < 140 && Math.random() > 0.3) {
+    baseHue = Math.random() > 0.5 ? rand(150, 170) : rand(50, 80);
+  }
 
   // ── Paso 2: Estrategia de armonía ───────────────────────────────────────
   const strategyName = options.strategyName || pickHarmonyStrategy();
@@ -431,41 +458,47 @@ export function generateTheme(options = {}) {
     l: rand(mood.mutedDarkL[0], Math.min(40, mood.mutedDarkL[1] + 5)),
   };
 
+  // ── NUEVO: Tintes para fondos y texto (variedad en oscuros) ────────────
+  // Los colores oscuros pueden ser azul negro, verde oscuro, o el baseHue.
+  const darkTintCandidates = [baseHue, secondaryHue, accentHue, rand(200, 260), rand(140, 180)];
+  const darkTintHue = Math.random() > 0.35 ? darkTintCandidates[randInt(0, darkTintCandidates.length - 1)] : baseHue;
+  const lightTintHue = Math.random() > 0.6 ? secondaryHue : baseHue;
+
   // ── Paso 7: Generar BACKGROUNDS (Light Mode) ───────────────────────────
   const bgLight = {
-    h: baseHue,
+    h: lightTintHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1]),
     l: rand(mood.bgLightL[0], mood.bgLightL[1]),
   };
 
   // ── Paso 8: Generar BACKGROUNDS (Dark Mode) ────────────────────────────
   const bgDark = {
-    h: baseHue,
-    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
+    h: darkTintHue,
+    s: rand(mood.bgTintS[0] + 5, mood.bgTintS[1] + 15),
     l: rand(mood.bgDarkL[0], mood.bgDarkL[1]),
   };
 
   // ── Paso 9: Generar MUTED (fondos de segunda capa) ─────────────────────
   const mutedLight = {
-    h: baseHue,
+    h: lightTintHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1] + 5),
     l: rand(mood.mutedLightL[0], mood.mutedLightL[1]),
   };
   const mutedDark = {
-    h: baseHue,
-    s: rand(mood.bgTintS[0], mood.bgTintS[1] + 5),
+    h: darkTintHue,
+    s: rand(mood.bgTintS[0] + 5, mood.bgTintS[1] + 15),
     l: rand(mood.mutedDarkL[0], mood.mutedDarkL[1]),
   };
 
   // ── Paso 10: Generar BORDER ────────────────────────────────────────────
   const borderLight = {
-    h: baseHue,
+    h: lightTintHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1]),
     l: rand(Math.max(75, mood.mutedLightL[0] - 8), mood.mutedLightL[0]),
   };
   const borderDark = {
-    h: baseHue,
-    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
+    h: darkTintHue,
+    s: rand(mood.bgTintS[0] + 5, mood.bgTintS[1] + 15),
     l: rand(mood.mutedDarkL[1], Math.min(45, mood.mutedDarkL[1] + 12)),
   };
 
@@ -477,19 +510,19 @@ export function generateTheme(options = {}) {
   };
 
   // ── Paso 12: FOREGROUNDS automáticos por contraste ─────────────────────
-  // Ahora pasamos baseHue para que los grises/blancos/negros estén TEÑIDOS
-  const fgLight           = autoForeground(bgLight.h, bgLight.s, bgLight.l, baseHue);
-  const fgDark            = autoForeground(bgDark.h, bgDark.s, bgDark.l, baseHue);
-  const primaryFg         = autoForeground(primary.h, primary.s, primary.l, baseHue);
-  const secondaryFgLight  = autoForeground(secondaryLight.h, secondaryLight.s, secondaryLight.l, baseHue);
-  const secondaryFgDark   = autoForeground(secondaryDark.h, secondaryDark.s, secondaryDark.l, baseHue);
-  const accentFgLight     = autoForeground(accentLight.h, accentLight.s, accentLight.l, baseHue);
-  const accentFgDark      = autoForeground(accentDark.h, accentDark.s, accentDark.l, baseHue);
-  const destructiveFg     = autoForeground(destructive.h, destructive.s, destructive.l, baseHue);
+  // Ahora usamos darkTintHue y lightTintHue para mayor riqueza cromática en textos
+  const fgLight           = autoForeground(bgLight.h, bgLight.s, bgLight.l, darkTintHue, lightTintHue);
+  const fgDark            = autoForeground(bgDark.h, bgDark.s, bgDark.l, darkTintHue, lightTintHue);
+  const primaryFg         = autoForeground(primary.h, primary.s, primary.l, darkTintHue, lightTintHue);
+  const secondaryFgLight  = autoForeground(secondaryLight.h, secondaryLight.s, secondaryLight.l, darkTintHue, lightTintHue);
+  const secondaryFgDark   = autoForeground(secondaryDark.h, secondaryDark.s, secondaryDark.l, darkTintHue, lightTintHue);
+  const accentFgLight     = autoForeground(accentLight.h, accentLight.s, accentLight.l, darkTintHue, lightTintHue);
+  const accentFgDark      = autoForeground(accentDark.h, accentDark.s, accentDark.l, darkTintHue, lightTintHue);
+  const destructiveFg     = autoForeground(destructive.h, destructive.s, destructive.l, darkTintHue, lightTintHue);
 
-  // Muted foreground: tinted grey using baseHue
-  const mutedFgLight = { h: baseHue, s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 10, 30)), l: rand(35, 50) };
-  const mutedFgDark  = { h: baseHue, s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 10, 30)), l: rand(55, 70) };
+  // Muted foreground: tinted using darkTint/lightTint
+  const mutedFgLight = { h: darkTintHue, s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 15, 30)), l: rand(35, 50) };
+  const mutedFgDark  = { h: lightTintHue, s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 15, 30)), l: rand(55, 70) };
 
   // ── Helper: convierte {h,s,l} a HEX ───────────────────────────────────
   const hex = ({ h, s, l }) => hslToHex(h, s, l);
@@ -550,9 +583,9 @@ export function generateTheme(options = {}) {
 
 const ADJECTIVES = [
   'Arctic', 'Velvet', 'Neon', 'Cosmic', 'Ember', 'Frosted', 'Golden',
-  'Midnight', 'Crimson', 'Electric', 'Mystic', 'Solar', 'Lunar', 'Obsidian',
-  'Pearl', 'Jade', 'Copper', 'Indigo', 'Sage', 'Slate', 'Rust', 'Ivory',
-  'Cobalt', 'Amber', 'Violet', 'Teal', 'Scarlet', 'Onyx', 'Silver', 'Citrus',
+  'Midnight', 'Electric', 'Mystic', 'Solar', 'Lunar', 'Crystal',
+  'Pearl', 'Abyssal', 'Radiant', 'Lucid', 'Vivid', 'Silent', 'Dynamic',
+  'Fluid', 'Aero', 'Stellar', 'Digital', 'Quantum', 'Serene', 'Wild',
 ];
 
 const NOUNS = [
