@@ -89,40 +89,40 @@ import Layout from '../layouts/Layout.astro';
         <div id="preview-wrapper" class="glass" style="border-radius:var(--radius-lg);overflow:hidden;min-height:560px;">
           <div class="preview-root" id="preview-root" style="height:100%;min-height:560px;padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem;">
 
-            <!-- Preview Navbar -->
-            <nav style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border-radius:8px;background-color:var(--primary);color:var(--primary-foreground);">
-              <span style="font-weight:700;font-size:0.95rem;">MyApp</span>
-              <div style="display:flex;gap:1rem;font-size:0.8rem;opacity:0.85;">
+            <!-- Preview Navbar: uses background + border, NOT primary as full bg -->
+            <nav style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border-radius:8px;background-color:var(--background);border:1px solid var(--border);">
+              <span style="font-weight:700;font-size:0.95rem;color:var(--foreground);">MyApp</span>
+              <div style="display:flex;gap:1rem;font-size:0.8rem;color:var(--muted-foreground);">
                 <span>Inicio</span><span>Acerca</span><span>Precios</span>
               </div>
-              <button style="background:var(--primary-foreground);color:var(--primary);border:none;border-radius:6px;padding:0.3rem 0.85rem;font-size:0.8rem;font-weight:600;cursor:pointer;">Login</button>
+              <button style="background:var(--primary);color:var(--primary-foreground);border:none;border-radius:6px;padding:0.3rem 0.85rem;font-size:0.8rem;font-weight:600;cursor:pointer;">Login</button>
             </nav>
 
-            <!-- Preview Hero -->
-            <div style="padding:2rem 1.5rem;border-radius:8px;background-color:var(--secondary);border:1px solid var(--border);">
-              <p style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:0.5rem;">Bienvenido</p>
+            <!-- Preview Hero Section -->
+            <div style="padding:2rem 1.5rem;border-radius:8px;background-color:var(--muted);border:1px solid var(--border);">
+              <p style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--primary);margin-bottom:0.5rem;">Bienvenido</p>
               <h2 style="font-size:1.6rem;font-weight:800;color:var(--foreground);margin-bottom:0.75rem;line-height:1.2;">Construye algo increíble hoy</h2>
               <p style="color:var(--muted-foreground);font-size:0.875rem;margin-bottom:1.25rem;line-height:1.6;">Una descripción que convence. Esta paleta hace que todo luzca coherente y profesional.</p>
               <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
                 <button style="background:var(--primary);color:var(--primary-foreground);border:none;border-radius:6px;padding:0.55rem 1.25rem;font-weight:600;font-size:0.85rem;cursor:pointer;">Empezar Gratis</button>
-                <button style="background:transparent;color:var(--foreground);border:1px solid var(--border);border-radius:6px;padding:0.55rem 1.25rem;font-size:0.85rem;cursor:pointer;">Ver Demo</button>
+                <button style="background:var(--secondary);color:var(--secondary-foreground);border:1px solid var(--border);border-radius:6px;padding:0.55rem 1.25rem;font-size:0.85rem;cursor:pointer;">Ver Demo</button>
               </div>
             </div>
 
             <!-- Preview Cards Row -->
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
               <div style="padding:1rem;border-radius:8px;background-color:var(--background);border:1px solid var(--border);">
-                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--accent);margin-bottom:0.75rem;"></div>
+                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--primary-foreground);margin-bottom:0.75rem;">✦</div>
                 <p style="font-weight:600;font-size:0.875rem;color:var(--foreground);margin-bottom:0.3rem;">Diseño</p>
                 <p style="font-size:0.75rem;color:var(--muted-foreground);">Hermoso y consistente en toda la interfaz.</p>
               </div>
               <div style="padding:1rem;border-radius:8px;background-color:var(--background);border:1px solid var(--border);">
-                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--primary);margin-bottom:0.75rem;"></div>
+                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--primary-foreground);margin-bottom:0.75rem;">◈</div>
                 <p style="font-weight:600;font-size:0.875rem;color:var(--foreground);margin-bottom:0.3rem;">Accesible</p>
                 <p style="font-size:0.75rem;color:var(--muted-foreground);">Contraste garantizado en cada combinación.</p>
               </div>
               <div style="padding:1rem;border-radius:8px;background-color:var(--background);border:1px solid var(--border);">
-                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--secondary);border:1px solid var(--border);margin-bottom:0.75rem;"></div>
+                <div style="width:36px;height:36px;border-radius:8px;background-color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--primary-foreground);margin-bottom:0.75rem;">⚡</div>
                 <p style="font-weight:600;font-size:0.875rem;color:var(--foreground);margin-bottom:0.3rem;">Escalable</p>
                 <p style="font-size:0.75rem;color:var(--muted-foreground);">Variables semánticas listas para producción.</p>
               </div>
@@ -130,15 +130,15 @@ import Layout from '../layouts/Layout.astro';
 
             <!-- Preview Form + Alert Row -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-              <div style="padding:1rem;border-radius:8px;background-color:var(--muted);border:1px solid var(--border);display:flex;flex-direction:column;gap:0.6rem;">
-                <label style="font-size:0.75rem;font-weight:600;color:var(--muted-foreground);">Email</label>
+              <div style="padding:1rem;border-radius:8px;background-color:var(--secondary);border:1px solid var(--border);display:flex;flex-direction:column;gap:0.6rem;">
+                <label style="font-size:0.75rem;font-weight:600;color:var(--foreground);">Email</label>
                 <div style="padding:0.45rem 0.75rem;border-radius:6px;background:var(--background);border:1px solid var(--border);font-size:0.8rem;color:var(--muted-foreground);">usuario@email.com</div>
                 <button style="background:var(--primary);color:var(--primary-foreground);border:none;border-radius:6px;padding:0.5rem;font-size:0.8rem;font-weight:600;cursor:pointer;">Suscribirse</button>
               </div>
               <div style="display:flex;flex-direction:column;gap:0.5rem;">
                 <div style="padding:0.75rem;border-radius:8px;background-color:var(--accent);border:1px solid var(--border);font-size:0.8rem;color:var(--accent-foreground);">✓ Operación completada con éxito.</div>
-                <div style="padding:0.75rem;border-radius:8px;background-color:var(--destructive);border:1px solid var(--border);font-size:0.8rem;color:var(--destructive-foreground);">✕ Algo salió mal. Intenta de nuevo.</div>
-                <div style="padding:0.75rem;border-radius:8px;background-color:var(--secondary);border:1px solid var(--border);font-size:0.8rem;color:var(--secondary-foreground);">ℹ Información secundaria aquí.</div>
+                <div style="padding:0.75rem;border-radius:8px;background-color:var(--destructive);font-size:0.8rem;color:var(--destructive-foreground);">✕ Algo salió mal. Intenta de nuevo.</div>
+                <div style="padding:0.75rem;border-radius:8px;background-color:var(--muted);border:1px solid var(--border);font-size:0.8rem;color:var(--muted-foreground);">ℹ Información secundaria aquí.</div>
               </div>
             </div>
 
