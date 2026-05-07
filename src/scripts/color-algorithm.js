@@ -231,6 +231,127 @@ function pickHarmonyStrategy() {
 }
 
 // =============================================================================
+// MOODS DE PALETA (Intensidad y Personalidad)
+// =============================================================================
+
+/**
+ * Los "moods" controlan la saturación y luminosidad de los colores generados.
+ * Cada mood define rangos [min, max] para cada tipo de color.
+ *
+ * SIN moods: todas las paletas salen "chillantes" porque la saturación
+ * siempre está en 55-90%. CON moods: hay variedad real.
+ *
+ * 🎛️ VIBECODING:
+ * Cada mood tiene estas propiedades:
+ *   - primaryS:    [min, max] saturación del color primario
+ *   - primaryL:    [min, max] luminosidad del color primario
+ *   - secondaryS:  [min, max] saturación del secundario
+ *   - secondaryL:  [min, max] luminosidad del secundario
+ *   - accentS:     [min, max] saturación del acento
+ *   - accentL:     [min, max] luminosidad del acento
+ *   - bgTintS:     [min, max] saturación del tinte en fondos (background/muted/border)
+ *
+ * Para crear un mood nuevo: copia uno existente, cámbiale los rangos, y
+ * añádelo al array PALETTE_MOODS.
+ */
+const PALETTE_MOODS = {
+  /**
+   * BOLD: Colores vivos y confiables. El "estándar" de diseño web moderno.
+   * Piensa en: Stripe, Linear, Vercel.
+   */
+  bold: {
+    name: 'bold',
+    primaryS: [55, 80],     // Saturación alta pero no extrema
+    primaryL: [42, 58],     // Luminosidad media
+    secondaryS: [25, 50],
+    secondaryL: [42, 60],
+    accentS: [45, 75],
+    accentL: [45, 62],
+    bgTintS: [8, 25],       // Tinte sutil en fondos
+  },
+
+  /**
+   * SOFT: Pasteles suaves y elegantes. Colores "calmados".
+   * Piensa en: Notion, apps de wellness, UI minimalista.
+   */
+  soft: {
+    name: 'soft',
+    primaryS: [30, 55],     // 🎛️ Saturación media-baja = colores suaves
+    primaryL: [55, 72],     // 🎛️ Luminosidad alta = pasteles
+    secondaryS: [20, 40],
+    secondaryL: [55, 70],
+    accentS: [30, 55],
+    accentL: [55, 70],
+    bgTintS: [5, 18],
+  },
+
+  /**
+   * MUTED: Tonos apagados y sofisticados. Elegancia corporativa.
+   * Piensa en: apps bancarias, luxury brands, portfolios de arquitectura.
+   */
+  muted: {
+    name: 'muted',
+    primaryS: [18, 42],     // 🎛️ Saturación baja = tonos "serios"
+    primaryL: [35, 55],     // 🎛️ Luminosidad media-baja = profundidad
+    secondaryS: [12, 30],
+    secondaryL: [40, 58],
+    accentS: [20, 45],
+    accentL: [40, 58],
+    bgTintS: [3, 12],       // 🎛️ Fondos casi neutros
+  },
+
+  /**
+   * DEEP: Colores oscuros y ricos. Premium y profundo.
+   * Piensa en: fintech, crypto, dashboards premium.
+   */
+  deep: {
+    name: 'deep',
+    primaryS: [45, 75],     // Saturación media-alta
+    primaryL: [30, 48],     // 🎛️ Luminosidad baja = colores profundos
+    secondaryS: [25, 50],
+    secondaryL: [32, 50],
+    accentS: [40, 70],
+    accentL: [35, 55],
+    bgTintS: [5, 15],
+  },
+
+  /**
+   * VIBRANT: Ultra-saturados y luminosos. Energía máxima.
+   * Piensa en: apps de gaming, redes sociales, startups.
+   */
+  vibrant: {
+    name: 'vibrant',
+    primaryS: [72, 95],     // 🎛️ Saturación extrema = POP
+    primaryL: [48, 62],     // Luminosidad media-alta
+    secondaryS: [45, 70],
+    secondaryL: [48, 65],
+    accentS: [65, 95],
+    accentL: [48, 65],
+    bgTintS: [10, 30],      // 🎛️ Fondos con tinte más notable
+  },
+};
+
+/**
+ * Elige un mood al azar para la paleta.
+ *
+ * 🎛️ VIBECODING: Ajusta estos pesos para cambiar la frecuencia.
+ * Actualmente:
+ *   - bold:    25% (el más "estándar")
+ *   - soft:    25% (pasteles elegantes)
+ *   - muted:   20% (corporativo/luxury)
+ *   - deep:    15% (premium oscuro)
+ *   - vibrant: 15% (energético)
+ */
+function pickMood() {
+  const roll = Math.random();
+  if (roll < 0.25) return PALETTE_MOODS.bold;
+  if (roll < 0.50) return PALETTE_MOODS.soft;
+  if (roll < 0.70) return PALETTE_MOODS.muted;
+  if (roll < 0.85) return PALETTE_MOODS.deep;
+  return PALETTE_MOODS.vibrant;
+}
+
+// =============================================================================
 // FUNCIÓN PRINCIPAL DE GENERACIÓN
 // =============================================================================
 
@@ -259,60 +380,62 @@ export function generateTheme() {
   const strategy = HARMONY_STRATEGIES[strategyName];
   const { secondaryHue, accentHue } = strategy(baseHue);
 
-  // ── Paso 3: Generar PRIMARY ─────────────────────────────────────────────
-  // El primary SIEMPRE usa el hue base, es el "color de marca"
-  // 🎛️ VIBECODING:
-  //   - Saturación 55-90: más bajo = más elegante, más alto = más vibrante
-  //   - Lightness 40-60: controla qué tan oscuro/claro es el color primario
+  // ── Paso 2.5: MOOD de la paleta ─────────────────────────────────────────
+  // El "mood" controla la intensidad general de los colores.
+  // Sin esto, TODOS los temas salen con saturación alta = "chillones".
+  // Con moods, a veces salen paletas suaves, a veces profundas, etc.
+  //
+  // 🎛️ VIBECODING: Ajusta los pesos en pickMood() para favorecer ciertos estilos.
+  //   - bold:    Colores vivos y llamativos (el comportamiento original)
+  //   - soft:    Pasteles suaves y elegantes, ideal para apps femeninas/wellness
+  //   - muted:   Tonos apagados y sofisticados, ideal para corporativo/luxury
+  //   - deep:    Colores oscuros y ricos, ideal para apps premium/fintech
+  //   - vibrant: Colores ultra-saturados y luminosos, ideal para apps gaming/social
+  const mood = pickMood();
+
+  // ── Paso 3: Generar PRIMARY según el mood ───────────────────────────────
   const primary = {
     h: baseHue,
-    s: rand(55, 90),
-    l: rand(42, 60),
+    s: rand(mood.primaryS[0], mood.primaryS[1]),
+    l: rand(mood.primaryL[0], mood.primaryL[1]),
   };
 
   // ── Paso 4: Generar SECONDARY ───────────────────────────────────────────
-  // Usa el hue derivado de la estrategia de armonía.
-  // En Light mode, secondary se usa frecuentemente como fondo de secciones,
-  // así que generamos DOS variantes: una saturada para dark y una pálida para light.
-  // 🎛️ VIBECODING: Saturación más baja que primary para que no compita
   const secondaryBase = {
     h: secondaryHue,
-    s: rand(30, 60),
-    l: rand(45, 60),
+    s: rand(mood.secondaryS[0], mood.secondaryS[1]),
+    l: rand(mood.secondaryL[0], mood.secondaryL[1]),
   };
   // Versión light: alta luminosidad, baja saturación → fondo suave
   const secondaryLight = {
     h: secondaryHue,
-    s: rand(15, 40),
+    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
     l: rand(88, 95),
   };
   // Versión dark: saturación moderada, luminosidad media-baja
   const secondaryDark = {
     h: secondaryHue,
-    s: rand(25, 50),
-    l: rand(18, 28),
+    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
+    l: rand(16, 26),
   };
 
   // ── Paso 5: Generar ACCENT ──────────────────────────────────────────────
-  // El accent es el "toque de color" más expresivo.
-  // En light mode se usa como fondo de highlight, en dark mode como color fuerte.
-  // 🎛️ VIBECODING: Sube la saturación para más "pop"
   const accent = {
     h: accentHue,
-    s: rand(50, 85),
-    l: rand(48, 65),
+    s: rand(mood.accentS[0], mood.accentS[1]),
+    l: rand(mood.accentL[0], mood.accentL[1]),
   };
   // Versión light: pálida para fondos de highlight
   const accentLight = {
     h: accentHue,
-    s: rand(20, 45),
+    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
     l: rand(88, 95),
   };
   // Versión dark: saturada para fondos de highlight en dark
   const accentDark = {
     h: accentHue,
-    s: rand(25, 50),
-    l: rand(18, 28),
+    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
+    l: rand(16, 26),
   };
 
   // ── Paso 6: Generar DESTRUCTIVE ─────────────────────────────────────────
@@ -400,7 +523,8 @@ export function generateTheme() {
   return {
     name: generateThemeName(),
     id: `theme_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    harmony: strategyName, // Metadata: qué estrategia se usó
+    harmony: strategyName,
+    mood: mood.name,          // Metadata: qué mood se usó (bold, soft, muted, deep, vibrant)
     baseHue: Math.round(baseHue),
     light: {
       'background':            hex(bgLight),
