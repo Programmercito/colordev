@@ -263,8 +263,8 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script type="module">
-  import { generateTheme, exportTailwindV4, exportCSSVariables, exportTailwindV3 } from '/src/scripts/color-algorithm.js';
-  import { addToHistory, getHistory, clearHistory, saveFavorite, getFavorites, deleteFavorite, clearAllFavorites, isFavorite } from '/src/scripts/theme-store.js';
+  import { generateTheme, exportTailwindV4, exportCSSVariables, exportTailwindV3 } from '../scripts/color-algorithm.js';
+  import { addToHistory, getHistory, clearHistory, saveFavorite, getFavorites, deleteFavorite, clearAllFavorites, isFavorite } from '../scripts/theme-store.js';
 
   // ── State ──────────────────────────────────────────────────────────────────
   let currentTheme = null;
