@@ -429,14 +429,20 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Render favorites ──────────────────────────────────────────────────────
   function renderFavorites() {
+    console.log('[Armonic] Rendering favorites...');
     const items = getFavorites();
-    favsEmpty.style.display = items.length ? 'none' : 'block';
-    clearFavsBtn.disabled = items.length === 0;
-    // Remove ALL theme cards from favorites container
-    while (favoritesList.querySelector('.theme-card')) {
-      favoritesList.querySelector('.theme-card').remove();
-    }
-    items.forEach(t => favoritesList.appendChild(createFavCard(t)));
+    if (favsEmpty) favsEmpty.style.display = items.length ? 'none' : 'block';
+    if (clearFavsBtn) clearFavsBtn.disabled = items.length === 0;
+    
+    if (!favoritesList) return;
+    
+    // Clear all children that are cards
+    const existingCards = favoritesList.querySelectorAll('.theme-card');
+    existingCards.forEach(card => card.remove());
+    
+    items.forEach(t => {
+      favoritesList.appendChild(createFavCard(t));
+    });
   }
 
   // ── Generate ──────────────────────────────────────────────────────────────
@@ -466,10 +472,9 @@ import Layout from '../layouts/Layout.astro';
   clearHistoryBtn.addEventListener('click', () => { clearHistory(); renderHistory(); });
 
   clearFavsBtn.addEventListener('click', () => {
-    if (confirm('¿Borrar todos los temas guardados?')) {
-      clearAllFavorites();
-      renderFavorites();
-    }
+    console.log('[Armonic] Clearing all favorites...');
+    clearAllFavorites();
+    renderFavorites();
   });
 
   copyBtn.addEventListener('click', () => {
