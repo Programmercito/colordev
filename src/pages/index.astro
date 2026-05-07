@@ -31,12 +31,12 @@ import Layout from '../layouts/Layout.astro';
     <div class="hero-glow hero-glow-3"></div>
 
     <div class="hero-content animate-fade-in-up">
-      <p class="hero-eyebrow">Generador de paletas semánticas</p>
+      <p class="hero-eyebrow">Design System Generator</p>
       <h1 class="hero-title">
-        Temas de color<br/><span class="gradient-text">armónicos y accesibles</span>
+        Paletas que<br/><span class="gradient-text">enamoran a primera vista</span>
       </h1>
       <p class="hero-desc">
-        Crea paletas con 14 variables semánticas, modo claro y oscuro incluido. Exporta a Tailwind v4, CSS puro o Tailwind v3 en un clic.
+        14 colores semánticos. Modo claro y oscuro. Exporta en un clic. Tu próximo diseño empieza aquí.
       </p>
       <div class="hero-ctas">
         <button id="hero-generate-btn" class="btn btn-primary btn-lg">
@@ -214,7 +214,7 @@ import Layout from '../layouts/Layout.astro';
           <button class="tab" data-export="css">CSS Variables</button>
           <button class="tab" data-export="tw3">Tailwind v3</button>
         </div>
-        <div style="position:relative;flex:1;">
+        <div style="position:relative;flex:1;display:flex;flex-direction:column;">
           <pre class="code-block" id="export-code"><code id="export-content" style="white-space:pre-wrap;">Genera un tema para ver el código...</code></pre>
           <button class="copy-btn" id="copy-btn">Copiar</button>
         </div>

@@ -426,7 +426,7 @@ button, a, input { transition: all 0.2s ease; }
 
 .history-list {
   display: flex; flex-direction: column; gap: 0.4rem;
-  max-height: 350px; overflow-y: auto;
+  max-height: 180px; overflow-y: auto;
 }
 
 /* =============================================================================
@@ -437,16 +437,17 @@ button, a, input { transition: all 0.2s ease; }
   display: grid;
   grid-template-columns: 1fr 340px;
   gap: 1.5rem;
-  align-items: stretch; /* Equal height panels */
+  align-items: stretch;
 }
 
-.export-panel { min-width: 0; display: flex; flex-direction: column; }
+.export-panel { min-width: 0; display: flex; flex-direction: column; height: 100%; }
 .export-panel .code-block { flex: 1; }
 
 .code-block {
-  position: relative; background: var(--app-bg);
+  position: absolute; inset: 0;
+  background: var(--app-bg);
   border: 1px solid var(--app-border); border-radius: var(--radius-md);
-  padding: 1.25rem; overflow: auto; max-height: 500px;
+  padding: 1.25rem; overflow: auto;
   font-size: 0.78rem; line-height: 1.65;
   color: var(--app-accent);
 }
@@ -741,6 +742,7 @@ button, a, input { transition: all 0.2s ease; }
     position: absolute;
     top: 56px;
     left: 0; right: 0;
+    transform: none;
     background: var(--app-bg);
     border-bottom: 1px solid var(--app-border);
     flex-direction: column;
