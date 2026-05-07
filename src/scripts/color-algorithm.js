@@ -127,11 +127,11 @@ function getLuminance(h, s, l) {
  * - Subir el umbral (ej. 0.3) = usa blanco más a menudo
  * - Bajarlo (ej. 0.1) = usa negro más a menudo
  */
-function autoForeground(h, s, l) {
+function autoForeground(h, s, l, baseHue = h) {
   const lum = getLuminance(h, s, l);
   return lum > 0.179
-    ? { h: 0, s: 0, l: 8 }   // Fondo claro → texto casi negro
-    : { h: 0, s: 0, l: 96 }; // Fondo oscuro → texto casi blanco
+    ? { h: baseHue, s: rand(15, 30), l: rand(4, 12) }   // Fondo claro → oscuro teñido
+    : { h: baseHue, s: rand(5, 20), l: rand(93, 98) };  // Fondo oscuro → claro teñido
 }
 
 // =============================================================================
@@ -255,80 +255,78 @@ function pickHarmonyStrategy() {
  * añádelo al array PALETTE_MOODS.
  */
 const PALETTE_MOODS = {
-  /**
-   * BOLD: Colores vivos y confiables. El "estándar" de diseño web moderno.
-   * Piensa en: Stripe, Linear, Vercel.
-   */
   bold: {
     name: 'bold',
-    primaryS: [55, 80],     // Saturación alta pero no extrema
-    primaryL: [42, 58],     // Luminosidad media
-    secondaryS: [25, 50],
-    secondaryL: [42, 60],
-    accentS: [45, 75],
-    accentL: [45, 62],
-    bgTintS: [8, 25],       // Tinte sutil en fondos
+    primaryS: [55, 80], primaryL: [42, 58],
+    secondaryS: [25, 50], secondaryL: [42, 60],
+    accentS: [45, 75], accentL: [45, 62],
+    bgTintS: [8, 25],
+    bgLightL: [95, 99], bgDarkL: [5, 12],
+    mutedLightL: [89, 95], mutedDarkL: [12, 22],
   },
-
-  /**
-   * SOFT: Pasteles suaves y elegantes. Colores "calmados".
-   * Piensa en: Notion, apps de wellness, UI minimalista.
-   */
   soft: {
     name: 'soft',
-    primaryS: [30, 55],     // 🎛️ Saturación media-baja = colores suaves
-    primaryL: [55, 72],     // 🎛️ Luminosidad alta = pasteles
-    secondaryS: [20, 40],
-    secondaryL: [55, 70],
-    accentS: [30, 55],
-    accentL: [55, 70],
+    primaryS: [30, 55], primaryL: [55, 72],
+    secondaryS: [20, 40], secondaryL: [55, 70],
+    accentS: [30, 55], accentL: [55, 70],
     bgTintS: [5, 18],
+    bgLightL: [96, 99], bgDarkL: [8, 15],
+    mutedLightL: [90, 96], mutedDarkL: [15, 24],
   },
-
-  /**
-   * MUTED: Tonos apagados y sofisticados. Elegancia corporativa.
-   * Piensa en: apps bancarias, luxury brands, portfolios de arquitectura.
-   */
   muted: {
     name: 'muted',
-    primaryS: [18, 42],     // 🎛️ Saturación baja = tonos "serios"
-    primaryL: [35, 55],     // 🎛️ Luminosidad media-baja = profundidad
-    secondaryS: [12, 30],
-    secondaryL: [40, 58],
-    accentS: [20, 45],
-    accentL: [40, 58],
-    bgTintS: [3, 12],       // 🎛️ Fondos casi neutros
+    primaryS: [18, 42], primaryL: [35, 55],
+    secondaryS: [12, 30], secondaryL: [40, 58],
+    accentS: [20, 45], accentL: [40, 58],
+    bgTintS: [3, 12],
+    bgLightL: [94, 98], bgDarkL: [10, 18],
+    mutedLightL: [88, 93], mutedDarkL: [18, 28],
   },
-
-  /**
-   * DEEP: Colores oscuros y ricos. Premium y profundo.
-   * Piensa en: fintech, crypto, dashboards premium.
-   */
   deep: {
     name: 'deep',
-    primaryS: [45, 75],     // Saturación media-alta
-    primaryL: [30, 48],     // 🎛️ Luminosidad baja = colores profundos
-    secondaryS: [25, 50],
-    secondaryL: [32, 50],
-    accentS: [40, 70],
-    accentL: [35, 55],
-    bgTintS: [5, 15],
+    primaryS: [45, 75], primaryL: [30, 48],
+    secondaryS: [25, 50], secondaryL: [32, 50],
+    accentS: [40, 70], accentL: [35, 55],
+    bgTintS: [15, 30],
+    bgLightL: [92, 97], bgDarkL: [2, 8],
+    mutedLightL: [85, 92], mutedDarkL: [8, 16],
   },
-
-  /**
-   * VIBRANT: Ultra-saturados y luminosos. Energía máxima.
-   * Piensa en: apps de gaming, redes sociales, startups.
-   */
   vibrant: {
     name: 'vibrant',
-    primaryS: [72, 95],     // 🎛️ Saturación extrema = POP
-    primaryL: [48, 62],     // Luminosidad media-alta
-    secondaryS: [45, 70],
-    secondaryL: [48, 65],
-    accentS: [65, 95],
-    accentL: [48, 65],
-    bgTintS: [10, 30],      // 🎛️ Fondos con tinte más notable
+    primaryS: [72, 95], primaryL: [48, 62],
+    secondaryS: [45, 70], secondaryL: [48, 65],
+    accentS: [65, 95], accentL: [48, 65],
+    bgTintS: [10, 30],
+    bgLightL: [95, 99], bgDarkL: [4, 12],
+    mutedLightL: [88, 94], mutedDarkL: [12, 20],
   },
+  earthy: {
+    name: 'earthy',
+    primaryS: [15, 35], primaryL: [30, 50],
+    secondaryS: [10, 25], secondaryL: [35, 55],
+    accentS: [20, 40], accentL: [35, 55],
+    bgTintS: [10, 25],
+    bgLightL: [90, 95], bgDarkL: [12, 20],
+    mutedLightL: [82, 88], mutedDarkL: [20, 30],
+  },
+  pastel: {
+    name: 'pastel',
+    primaryS: [40, 70], primaryL: [70, 85],
+    secondaryS: [30, 60], secondaryL: [70, 85],
+    accentS: [40, 75], accentL: [70, 85],
+    bgTintS: [15, 35],
+    bgLightL: [96, 99], bgDarkL: [15, 25],
+    mutedLightL: [90, 95], mutedDarkL: [25, 35],
+  },
+  midnight: {
+    name: 'midnight',
+    primaryS: [50, 80], primaryL: [50, 70],
+    secondaryS: [30, 60], secondaryL: [40, 60],
+    accentS: [60, 90], accentL: [50, 70],
+    bgTintS: [25, 45],
+    bgLightL: [94, 98], bgDarkL: [3, 9], 
+    mutedLightL: [86, 92], mutedDarkL: [9, 16],
+  }
 };
 
 /**
@@ -371,27 +369,17 @@ function pickMood() {
  *
  * @returns {Object} Tema completo con light, dark, swatches y metadata
  */
-export function generateTheme() {
-  // ── Paso 1: Hue base aleatorio ──────────────────────────────────────────
-  const baseHue = rand(0, 360);
+export function generateTheme(options = {}) {
+  // ── Paso 1: Hue base aleatorio o manual ──────────────────────────────────
+  const baseHue = options.baseHue !== undefined ? options.baseHue : rand(0, 360);
 
   // ── Paso 2: Estrategia de armonía ───────────────────────────────────────
-  const strategyName = pickHarmonyStrategy();
+  const strategyName = options.strategyName || pickHarmonyStrategy();
   const strategy = HARMONY_STRATEGIES[strategyName];
   const { secondaryHue, accentHue } = strategy(baseHue);
 
   // ── Paso 2.5: MOOD de la paleta ─────────────────────────────────────────
-  // El "mood" controla la intensidad general de los colores.
-  // Sin esto, TODOS los temas salen con saturación alta = "chillones".
-  // Con moods, a veces salen paletas suaves, a veces profundas, etc.
-  //
-  // 🎛️ VIBECODING: Ajusta los pesos en pickMood() para favorecer ciertos estilos.
-  //   - bold:    Colores vivos y llamativos (el comportamiento original)
-  //   - soft:    Pasteles suaves y elegantes, ideal para apps femeninas/wellness
-  //   - muted:   Tonos apagados y sofisticados, ideal para corporativo/luxury
-  //   - deep:    Colores oscuros y ricos, ideal para apps premium/fintech
-  //   - vibrant: Colores ultra-saturados y luminosos, ideal para apps gaming/social
-  const mood = pickMood();
+  const mood = options.moodName ? PALETTE_MOODS[options.moodName] : pickMood();
 
   // ── Paso 3: Generar PRIMARY según el mood ───────────────────────────────
   const primary = {
@@ -400,23 +388,30 @@ export function generateTheme() {
     l: rand(mood.primaryL[0], mood.primaryL[1]),
   };
 
+  // ── Paso 6: Generar DESTRUCTIVE ─────────────────────────────────────────
+  // Para variedad, puede ser desde magenta/rosado (330) hasta naranja (30)
+  const destructiveHue = Math.random() > 0.5 ? rand(330, 360) : rand(0, 30);
+  const destructive = {
+    h: destructiveHue,
+    s: rand(Math.min(90, mood.primaryS[0] + 15), 98),
+    l: rand(Math.max(35, mood.primaryL[0] - 10), Math.min(65, mood.primaryL[1] + 10)),
+  };
+
   // ── Paso 4: Generar SECONDARY ───────────────────────────────────────────
   const secondaryBase = {
     h: secondaryHue,
     s: rand(mood.secondaryS[0], mood.secondaryS[1]),
     l: rand(mood.secondaryL[0], mood.secondaryL[1]),
   };
-  // Versión light: alta luminosidad, baja saturación → fondo suave
   const secondaryLight = {
     h: secondaryHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1]),
-    l: rand(88, 95),
+    l: rand(Math.max(80, mood.mutedLightL[0] - 5), mood.mutedLightL[1]),
   };
-  // Versión dark: saturación moderada, luminosidad media-baja
   const secondaryDark = {
     h: secondaryHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1]),
-    l: rand(16, 26),
+    l: rand(mood.mutedDarkL[0], Math.min(40, mood.mutedDarkL[1] + 5)),
   };
 
   // ── Paso 5: Generar ACCENT ──────────────────────────────────────────────
@@ -425,68 +420,53 @@ export function generateTheme() {
     s: rand(mood.accentS[0], mood.accentS[1]),
     l: rand(mood.accentL[0], mood.accentL[1]),
   };
-  // Versión light: pálida para fondos de highlight
   const accentLight = {
     h: accentHue,
-    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
-    l: rand(88, 95),
+    s: rand(mood.bgTintS[0] + 10, mood.bgTintS[1] + 10),
+    l: rand(Math.max(80, mood.mutedLightL[0] - 5), mood.mutedLightL[1]),
   };
-  // Versión dark: saturada para fondos de highlight en dark
   const accentDark = {
     h: accentHue,
-    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
-    l: rand(16, 26),
-  };
-
-  // ── Paso 6: Generar DESTRUCTIVE ─────────────────────────────────────────
-  // Siempre en la zona roja/naranja para que se interprete como "peligro"
-  // 🎛️ VIBECODING:
-  //   - Hue 0-15: rojo puro
-  //   - Hue 15-30: rojo-naranja (más suave)
-  //   - Hue 350-360: rojo-rosado
-  const destructive = {
-    h: rand(0, 12),
-    s: rand(70, 92),
-    l: rand(40, 55),
+    s: rand(mood.bgTintS[0] + 10, mood.bgTintS[1] + 10),
+    l: rand(mood.mutedDarkL[0], Math.min(40, mood.mutedDarkL[1] + 5)),
   };
 
   // ── Paso 7: Generar BACKGROUNDS (Light Mode) ───────────────────────────
-  // 🎛️ VIBECODING: bgTintS from the mood controls how colored the bg is
   const bgLight = {
     h: baseHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1]),
-    l: rand(95, 99),
+    l: rand(mood.bgLightL[0], mood.bgLightL[1]),
   };
 
   // ── Paso 8: Generar BACKGROUNDS (Dark Mode) ────────────────────────────
   const bgDark = {
     h: baseHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1]),
-    l: rand(5, 14),
+    l: rand(mood.bgDarkL[0], mood.bgDarkL[1]),
   };
 
   // ── Paso 9: Generar MUTED (fondos de segunda capa) ─────────────────────
   const mutedLight = {
     h: baseHue,
-    s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 8, 40)),
-    l: rand(89, 95),
+    s: rand(mood.bgTintS[0], mood.bgTintS[1] + 5),
+    l: rand(mood.mutedLightL[0], mood.mutedLightL[1]),
   };
   const mutedDark = {
     h: baseHue,
-    s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 8, 40)),
-    l: rand(13, 22),
+    s: rand(mood.bgTintS[0], mood.bgTintS[1] + 5),
+    l: rand(mood.mutedDarkL[0], mood.mutedDarkL[1]),
   };
 
   // ── Paso 10: Generar BORDER ────────────────────────────────────────────
   const borderLight = {
     h: baseHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1]),
-    l: rand(82, 92),
+    l: rand(Math.max(75, mood.mutedLightL[0] - 8), mood.mutedLightL[0]),
   };
   const borderDark = {
     h: baseHue,
     s: rand(mood.bgTintS[0], mood.bgTintS[1]),
-    l: rand(20, 32),
+    l: rand(mood.mutedDarkL[1], Math.min(45, mood.mutedDarkL[1] + 12)),
   };
 
   // ── Paso 11: RING (foco de teclado) = usa accentHue para variedad ─────
@@ -497,14 +477,15 @@ export function generateTheme() {
   };
 
   // ── Paso 12: FOREGROUNDS automáticos por contraste ─────────────────────
-  const fgLight           = autoForeground(bgLight.h, bgLight.s, bgLight.l);
-  const fgDark            = autoForeground(bgDark.h, bgDark.s, bgDark.l);
-  const primaryFg         = autoForeground(primary.h, primary.s, primary.l);
-  const secondaryFgLight  = autoForeground(secondaryLight.h, secondaryLight.s, secondaryLight.l);
-  const secondaryFgDark   = autoForeground(secondaryDark.h, secondaryDark.s, secondaryDark.l);
-  const accentFgLight     = autoForeground(accentLight.h, accentLight.s, accentLight.l);
-  const accentFgDark      = autoForeground(accentDark.h, accentDark.s, accentDark.l);
-  const destructiveFg     = autoForeground(destructive.h, destructive.s, destructive.l);
+  // Ahora pasamos baseHue para que los grises/blancos/negros estén TEÑIDOS
+  const fgLight           = autoForeground(bgLight.h, bgLight.s, bgLight.l, baseHue);
+  const fgDark            = autoForeground(bgDark.h, bgDark.s, bgDark.l, baseHue);
+  const primaryFg         = autoForeground(primary.h, primary.s, primary.l, baseHue);
+  const secondaryFgLight  = autoForeground(secondaryLight.h, secondaryLight.s, secondaryLight.l, baseHue);
+  const secondaryFgDark   = autoForeground(secondaryDark.h, secondaryDark.s, secondaryDark.l, baseHue);
+  const accentFgLight     = autoForeground(accentLight.h, accentLight.s, accentLight.l, baseHue);
+  const accentFgDark      = autoForeground(accentDark.h, accentDark.s, accentDark.l, baseHue);
+  const destructiveFg     = autoForeground(destructive.h, destructive.s, destructive.l, baseHue);
 
   // Muted foreground: tinted grey using baseHue
   const mutedFgLight = { h: baseHue, s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 10, 30)), l: rand(35, 50) };
