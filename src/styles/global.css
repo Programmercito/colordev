@@ -834,7 +834,11 @@ button, a, input { transition: all 0.2s ease; }
   }
   .nav-links.open { display: flex; }
 
-  .section-hero { padding: 7rem 1.25rem 4rem; min-height: auto; }
+  .section-hero {
+    padding: 7rem 1.25rem 4rem;
+    min-height: 100dvh;
+    min-height: 100svh;
+  }
   .hero-title { font-size: clamp(2rem, 8vw, 3rem); }
 
   .pv-cards { grid-template-columns: 1fr; }
@@ -848,6 +852,11 @@ button, a, input { transition: all 0.2s ease; }
 }
 
 @media (max-width: 480px) {
+  .section-hero {
+    min-height: 100dvh;
+    min-height: 100svh;
+    padding: 6rem 1rem 3rem;
+  }
   .hero-ctas { flex-direction: column; }
   .hero-ctas .btn { width: 100%; }
   .favorites-grid { grid-template-columns: 1fr; }

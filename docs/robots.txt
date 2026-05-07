@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://themes.devcito.org/sitemap-index.xml
