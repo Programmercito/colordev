@@ -451,55 +451,49 @@ export function generateTheme() {
   };
 
   // ── Paso 7: Generar BACKGROUNDS (Light Mode) ───────────────────────────
-  // Usa el MISMO hue base pero con saturación bajísima → crea un tinte
-  // sutil coherente con toda la paleta. Esta es la clave de la armonía.
-  // 🎛️ VIBECODING:
-  //   - S 2-10: tinte apenas perceptible (recomendado)
-  //   - S 10-20: tinte notable (se siente "coloreado")
-  //   - S 0: gris puro sin tinte
+  // 🎛️ VIBECODING: bgTintS from the mood controls how colored the bg is
   const bgLight = {
     h: baseHue,
-    s: rand(3, 12),     // 🎛️ Tinte muy sutil del hue base
-    l: rand(95, 99),    // 🎛️ Casi blanco
+    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
+    l: rand(95, 99),
   };
 
   // ── Paso 8: Generar BACKGROUNDS (Dark Mode) ────────────────────────────
   const bgDark = {
     h: baseHue,
-    s: rand(4, 15),     // 🎛️ Un poco más de tinte en dark mode
-    l: rand(5, 14),     // 🎛️ Casi negro con tinte
+    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
+    l: rand(5, 14),
   };
 
   // ── Paso 9: Generar MUTED (fondos de segunda capa) ─────────────────────
-  // También usa el hue base para coherencia
   const mutedLight = {
     h: baseHue,
-    s: rand(5, 18),
-    l: rand(90, 96),    // 🎛️ Ligeramente más oscuro que el background
+    s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 8, 40)),
+    l: rand(89, 95),
   };
   const mutedDark = {
     h: baseHue,
-    s: rand(5, 15),
-    l: rand(14, 24),    // 🎛️ Ligeramente más claro que el background dark
+    s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 8, 40)),
+    l: rand(13, 22),
   };
 
   // ── Paso 10: Generar BORDER ────────────────────────────────────────────
   const borderLight = {
     h: baseHue,
-    s: rand(3, 15),
-    l: rand(82, 92),    // 🎛️ Entre el muted y el background
+    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
+    l: rand(82, 92),
   };
   const borderDark = {
     h: baseHue,
-    s: rand(3, 12),
+    s: rand(mood.bgTintS[0], mood.bgTintS[1]),
     l: rand(20, 32),
   };
 
-  // ── Paso 11: RING (foco de teclado) = misma familia que primary ────────
+  // ── Paso 11: RING (foco de teclado) = usa accentHue para variedad ─────
   const ring = {
-    h: baseHue,
-    s: rand(60, 90),
-    l: rand(45, 60),
+    h: accentHue,
+    s: rand(mood.accentS[0], mood.accentS[1]),
+    l: rand(mood.accentL[0], mood.accentL[1]),
   };
 
   // ── Paso 12: FOREGROUNDS automáticos por contraste ─────────────────────
@@ -512,9 +506,9 @@ export function generateTheme() {
   const accentFgDark      = autoForeground(accentDark.h, accentDark.s, accentDark.l);
   const destructiveFg     = autoForeground(destructive.h, destructive.s, destructive.l);
 
-  // Muted foreground: texto gris medio/suave, usa el hue base para coherencia
-  const mutedFgLight = { h: baseHue, s: rand(5, 15), l: rand(35, 50) };
-  const mutedFgDark  = { h: baseHue, s: rand(5, 15), l: rand(55, 70) };
+  // Muted foreground: tinted grey using baseHue
+  const mutedFgLight = { h: baseHue, s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 10, 30)), l: rand(35, 50) };
+  const mutedFgDark  = { h: baseHue, s: rand(mood.bgTintS[0], Math.min(mood.bgTintS[1] + 10, 30)), l: rand(55, 70) };
 
   // ── Helper: convierte {h,s,l} a HEX ───────────────────────────────────
   const hex = ({ h, s, l }) => hslToHex(h, s, l);

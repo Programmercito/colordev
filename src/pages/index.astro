@@ -40,19 +40,9 @@ import Layout from '../layouts/Layout.astro';
       </p>
       <div class="hero-ctas">
         <button id="hero-generate-btn" class="btn btn-primary btn-lg">
-          ✦ Generar Tema Ahora
+          ✦ Generar Mi Primer Tema
         </button>
-        <a href="#generator" class="btn btn-ghost btn-lg">Explorar ↓</a>
       </div>
-    </div>
-
-    <!-- Animated color orbs -->
-    <div class="hero-orbs" aria-hidden="true">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-      <div class="orb orb-4"></div>
-      <div class="orb orb-5"></div>
     </div>
   </section>
 
@@ -78,19 +68,21 @@ import Layout from '../layouts/Layout.astro';
             <div class="gen-badges" id="gen-badges"></div>
           </div>
 
-          <div id="current-swatches" class="swatch-row" style="height:36px;border-radius:var(--radius-md);overflow:hidden;margin-top:0.75rem;"></div>
+          <!-- 14-color swatch: 2 rows of 7 -->
+          <div id="current-swatches" class="swatch-grid"></div>
 
-          <button id="save-btn" class="btn btn-ghost" style="width:100%;margin-top:0.75rem;" disabled>
-            ★ Guardar en Favoritos
-          </button>
-        </div>
+          <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+            <button id="save-btn" class="btn btn-ghost" style="flex:1;" disabled>
+              ★ Guardar en Favoritos
+            </button>
+          </div>
 
-        <!-- Preview Mode Toggle -->
-        <div class="panel">
-          <p class="section-title" style="margin-bottom:0.75rem;">Modo de Vista Previa</p>
-          <div class="tabs">
-            <button class="tab active" id="tab-light" data-mode="light">☀ Light</button>
-            <button class="tab" id="tab-dark" data-mode="dark">☾ Dark</button>
+          <!-- Preview Mode Toggle -->
+          <div style="margin-top:0.75rem;">
+            <div class="tabs">
+              <button class="tab active" id="tab-light" data-mode="light">☀ Light</button>
+              <button class="tab" id="tab-dark" data-mode="dark">☾ Dark</button>
+            </div>
           </div>
         </div>
 
@@ -106,7 +98,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
 
-      <!-- RIGHT: Preview -->
+      <!-- CENTER+RIGHT: Preview takes the remaining space -->
       <div class="gen-preview">
         <div class="panel" style="padding:0;overflow:hidden;">
           <div class="preview-root" id="preview-root">
@@ -115,36 +107,71 @@ import Layout from '../layouts/Layout.astro';
             <nav class="pv-nav">
               <span class="pv-logo">MyApp</span>
               <div class="pv-nav-links"><span>Inicio</span><span>Acerca</span><span>Precios</span></div>
-              <button class="pv-btn-primary" style="padding:0.3rem 0.85rem;font-size:0.8rem;">Login</button>
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <div class="pv-avatar">JD</div>
+                <button class="pv-btn-primary" style="padding:0.3rem 0.85rem;font-size:0.8rem;">Login</button>
+              </div>
             </nav>
 
             <!-- Hero -->
             <div class="pv-hero">
               <p class="pv-eyebrow">Bienvenido</p>
               <h2 class="pv-title">Construye algo increíble hoy</h2>
-              <p class="pv-desc">Una descripción que convence. Esta paleta hace que todo luzca coherente y profesional.</p>
+              <p class="pv-desc">Una descripción que convence. Esta paleta luce coherente.</p>
               <div class="pv-ctas">
                 <button class="pv-btn-primary">Empezar Gratis</button>
                 <button class="pv-btn-secondary">Ver Demo</button>
               </div>
             </div>
 
-            <!-- Cards -->
+            <!-- Stats Row -->
+            <div class="pv-stats-row">
+              <div class="pv-stat">
+                <p class="pv-stat-number" style="color:var(--primary);">2.4k</p>
+                <p class="pv-stat-label">Usuarios</p>
+              </div>
+              <div class="pv-stat">
+                <p class="pv-stat-number" style="color:var(--foreground);">98%</p>
+                <p class="pv-stat-label">Satisfacción</p>
+              </div>
+              <div class="pv-stat" style="background:var(--accent);border-color:transparent;">
+                <p class="pv-stat-number" style="color:var(--accent-foreground);">∞</p>
+                <p class="pv-stat-label" style="color:var(--accent-foreground);opacity:0.7;">Paletas</p>
+              </div>
+            </div>
+
+            <!-- Badges + Toggle -->
+            <div style="display:flex;gap:0.6rem;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+              <div class="pv-badges-row">
+                <span class="pv-badge" style="background:var(--primary);color:var(--primary-foreground);">Premium</span>
+                <span class="pv-badge" style="background:var(--secondary);color:var(--secondary-foreground);border:1px solid var(--border);">Gratis</span>
+                <span class="pv-badge" style="background:var(--accent);color:var(--accent-foreground);">Nuevo</span>
+                <span class="pv-badge" style="background:var(--destructive);color:var(--destructive-foreground);">Hot</span>
+              </div>
+              <div class="pv-toggle-row" style="flex-shrink:0;">
+                <span class="pv-toggle-label">Activar</span>
+                <div class="pv-toggle-switch"><div class="pv-toggle-dot"></div></div>
+              </div>
+            </div>
+
+            <!-- Cards with progress -->
             <div class="pv-cards">
               <div class="pv-card">
                 <div class="pv-icon">✦</div>
                 <p class="pv-card-title">Diseño</p>
-                <p class="pv-card-desc">Hermoso y consistente en toda la interfaz.</p>
+                <p class="pv-card-desc">Hermoso y consistente.</p>
+                <div class="pv-progress-bar" style="margin-top:0.5rem;"><div class="pv-progress-fill"></div></div>
               </div>
               <div class="pv-card">
-                <div class="pv-icon">◈</div>
+                <div class="pv-icon" style="background:var(--accent);color:var(--accent-foreground);">◈</div>
                 <p class="pv-card-title">Accesible</p>
-                <p class="pv-card-desc">Contraste garantizado en cada combinación.</p>
+                <p class="pv-card-desc">Contraste WCAG.</p>
+                <div class="pv-progress-bar" style="margin-top:0.5rem;"><div class="pv-progress-fill" style="width:45%;background:var(--ring);"></div></div>
               </div>
-              <div class="pv-card">
+              <div class="pv-card" style="background:var(--secondary);border-color:var(--border);">
                 <div class="pv-icon">⚡</div>
-                <p class="pv-card-title">Escalable</p>
-                <p class="pv-card-desc">Variables semánticas listas para producción.</p>
+                <p class="pv-card-title" style="color:var(--secondary-foreground);">Escalable</p>
+                <p class="pv-card-desc" style="color:var(--muted-foreground);">Variables semánticas.</p>
               </div>
             </div>
 
@@ -160,6 +187,11 @@ import Layout from '../layouts/Layout.astro';
                 <div class="pv-alert pv-alert-destructive">✕ Algo salió mal. Intenta de nuevo.</div>
                 <div class="pv-alert pv-alert-muted">ℹ Información secundaria aquí.</div>
               </div>
+            </div>
+
+            <!-- Footer with ring color -->
+            <div style="text-align:center;padding:0.5rem;border-top:1px solid var(--border);font-size:0.65rem;color:var(--muted-foreground);">
+              Hecho con <span style="color:var(--ring);">♥</span> · Todos los colores en acción
             </div>
 
           </div>
@@ -182,7 +214,7 @@ import Layout from '../layouts/Layout.astro';
           <button class="tab" data-export="css">CSS Variables</button>
           <button class="tab" data-export="tw3">Tailwind v3</button>
         </div>
-        <div style="position:relative;">
+        <div style="position:relative;flex:1;">
           <pre class="code-block" id="export-code"><code id="export-content" style="white-space:pre-wrap;">Genera un tema para ver el código...</code></pre>
           <button class="copy-btn" id="copy-btn">Copiar</button>
         </div>
@@ -209,7 +241,7 @@ import Layout from '../layouts/Layout.astro';
       <span><strong>Almacenamiento temporal.</strong> Los favoritos se guardan en tu navegador y se perderán si limpias el historial. Usa la exportación para conservarlos.</span>
     </div>
 
-    <div class="panel" style="max-width:680px;margin:0 auto;">
+    <div class="panel" style="max-width:800px;margin:0 auto;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
         <p class="section-title">★ Mis Favoritos</p>
         <button id="clear-favs-btn" class="btn btn-danger" style="font-size:0.7rem;padding:0.25rem 0.6rem;" disabled>Limpiar todo</button>
@@ -222,7 +254,7 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- FOOTER -->
   <footer class="site-footer">
-    <p>Hecho con ♥ por <strong class="gradient-text">devcito</strong></p>
+    <p>Hecho con ♥ por <a href="https://devcito.org" target="_blank" rel="noopener noreferrer" class="gradient-text" style="text-decoration:none;font-weight:700;">devcito</a></p>
     <p style="margin-top:0.4rem;opacity:0.5;">Colores generados con armonía HSL y contraste WCAG</p>
   </footer>
 </Layout>
@@ -236,7 +268,7 @@ import Layout from '../layouts/Layout.astro';
   let currentMode = 'light';
   let currentExport = 'tw4';
   let sessionCount = 0;
-  let appDark = true; // App starts in dark mode
+  let appDark = true;
 
   // ── DOM refs ───────────────────────────────────────────────────────────────
   const previewRoot       = document.getElementById('preview-root');
@@ -255,48 +287,48 @@ import Layout from '../layouts/Layout.astro';
   const clearFavsBtn      = document.getElementById('clear-favs-btn');
   const colorTable        = document.getElementById('color-table');
 
-  // ── App theme toggle (light/dark for the whole site) ──────────────────────
+  // ── App theme toggle ──────────────────────────────────────────────────────
   const themeToggle = document.getElementById('app-theme-toggle');
   const themeIcon = document.getElementById('theme-icon');
-
   function setAppTheme(dark) {
     appDark = dark;
     document.documentElement.setAttribute('data-app-theme', dark ? 'dark' : 'light');
     themeIcon.textContent = dark ? '☀' : '☾';
   }
-
   themeToggle.addEventListener('click', () => setAppTheme(!appDark));
-  setAppTheme(true); // Default dark
+  setAppTheme(true);
 
-  // ── Mobile nav toggle ────────────────────────────────────────────────────
+  // ── Mobile nav toggle ─────────────────────────────────────────────────────
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const navLinks = document.getElementById('nav-links');
   mobileMenuBtn.addEventListener('click', () => {
     navLinks.classList.toggle('open');
     mobileMenuBtn.textContent = navLinks.classList.contains('open') ? '✕' : '☰';
   });
-  // Close menu on link click
   navLinks.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-      navLinks.classList.remove('open');
-      mobileMenuBtn.textContent = '☰';
-    });
+    link.addEventListener('click', () => { navLinks.classList.remove('open'); mobileMenuBtn.textContent = '☰'; });
   });
 
-  // ── Active nav highlight on scroll ────────────────────────────────────────
+  // ── Scroll spy ────────────────────────────────────────────────────────────
   const sections = document.querySelectorAll('section[id]');
   const navLinkEls = document.querySelectorAll('.nav-link[data-section]');
   window.addEventListener('scroll', () => {
     let current = '';
-    sections.forEach(s => {
-      if (window.scrollY >= s.offsetTop - 120) current = s.id;
-    });
-    navLinkEls.forEach(el => {
-      el.classList.toggle('active', el.dataset.section === current);
-    });
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) current = s.id; });
+    navLinkEls.forEach(el => el.classList.toggle('active', el.dataset.section === current));
   });
 
-  // ── Apply theme to preview ─────────────────────────────────────────────────
+  // ── Helper: get all 14 hex values from a theme mode ────────────────────
+  function getAll14Colors(theme, mode) {
+    return Object.values(theme[mode || currentMode]);
+  }
+
+  // ── Build a 7x2 swatch grid (no labels, just colors) ──────────────────
+  function buildSwatchGrid(colors) {
+    return colors.map(c => `<div class="sg-cell" style="background:${c};"></div>`).join('');
+  }
+
+  // ── Apply theme to preview ────────────────────────────────────────────────
   function applyThemeToPreview(theme, mode) {
     const colors = theme[mode];
     Object.entries(colors).forEach(([key, val]) => {
@@ -326,35 +358,29 @@ import Layout from '../layouts/Layout.astro';
     `).join('');
   }
 
-  function renderSwatches(swatches, container) {
-    container.innerHTML = swatches.map(c =>
-      `<div class="swatch" style="background:${c};"></div>`
-    ).join('');
-  }
-
+  // ── Theme card (history) ──────────────────────────────────────────────────
   function createThemeCard(theme, isActive = false) {
     const div = document.createElement('div');
     div.className = `theme-card animate-card-in${isActive ? ' active' : ''}`;
     div.dataset.themeId = theme.id;
+    const colors = getAll14Colors(theme, 'light');
     div.innerHTML = `
-      <div class="swatch-row" style="height:20px;">
-        ${theme.swatches.map(c => `<div class="swatch" style="background:${c};"></div>`).join('')}
-      </div>
+      <div class="swatch-grid sg-small">${buildSwatchGrid(colors)}</div>
       <p class="theme-card-name">${theme.name}</p>
     `;
     div.addEventListener('click', () => loadTheme(theme));
     return div;
   }
 
+  // ── Fav card ──────────────────────────────────────────────────────────────
   function createFavCard(theme) {
     const div = document.createElement('div');
     div.className = 'theme-card animate-card-in';
     div.dataset.themeId = theme.id;
+    const colors = getAll14Colors(theme, 'light');
     div.innerHTML = `
-      <div class="swatch-row" style="height:20px;">
-        ${theme.swatches.map(c => `<div class="swatch" style="background:${c};"></div>`).join('')}
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.4rem;">
+      <div class="swatch-grid sg-small">${buildSwatchGrid(colors)}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.3rem;">
         <p class="theme-card-name">${theme.name}</p>
         <button data-delete-id="${theme.id}" class="fav-delete-btn">✕</button>
       </div>
@@ -368,6 +394,7 @@ import Layout from '../layouts/Layout.astro';
     return div;
   }
 
+  // ── Load theme ────────────────────────────────────────────────────────────
   function loadTheme(theme) {
     currentTheme = theme;
     currentThemeName.textContent = theme.name;
@@ -375,7 +402,7 @@ import Layout from '../layouts/Layout.astro';
       <span class="badge badge-accent">${theme.harmony || ''}</span>
       <span class="badge badge-accent">${theme.mood || ''}</span>
     `;
-    renderSwatches(theme.swatches, currentSwatches);
+    currentSwatches.innerHTML = buildSwatchGrid(getAll14Colors(theme, currentMode));
     applyThemeToPreview(theme, currentMode);
     updateColorTable(theme);
     updateExportCode();
@@ -386,10 +413,12 @@ import Layout from '../layouts/Layout.astro';
     saveBtn.textContent = isFavorite(theme.id) ? '★ Guardado' : '★ Guardar en Favoritos';
   }
 
+  // ── Render history ────────────────────────────────────────────────────────
   function renderHistory() {
     const items = getHistory();
     historyEmpty.style.display = items.length ? 'none' : 'block';
     clearHistoryBtn.disabled = items.length === 0;
+    // Remove old cards
     historyList.querySelectorAll('.theme-card').forEach(el => el.remove());
     items.forEach((t, i) => {
       const card = createThemeCard(t, currentTheme?.id === t.id);
@@ -398,14 +427,19 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
+  // ── Render favorites ──────────────────────────────────────────────────────
   function renderFavorites() {
     const items = getFavorites();
     favsEmpty.style.display = items.length ? 'none' : 'block';
     clearFavsBtn.disabled = items.length === 0;
-    favoritesList.querySelectorAll('.theme-card').forEach(el => el.remove());
+    // Remove ALL theme cards from favorites container
+    while (favoritesList.querySelector('.theme-card')) {
+      favoritesList.querySelector('.theme-card').remove();
+    }
     items.forEach(t => favoritesList.appendChild(createFavCard(t)));
   }
 
+  // ── Generate ──────────────────────────────────────────────────────────────
   function doGenerate() {
     const theme = generateTheme();
     addToHistory(theme);
@@ -415,7 +449,7 @@ import Layout from '../layouts/Layout.astro';
     renderHistory();
   }
 
-  // ── Event listeners ────────────────────────────────────────────────────────
+  // ── Events ────────────────────────────────────────────────────────────────
   document.getElementById('generate-btn').addEventListener('click', doGenerate);
   document.getElementById('hero-generate-btn').addEventListener('click', () => {
     doGenerate();
@@ -432,7 +466,7 @@ import Layout from '../layouts/Layout.astro';
   clearHistoryBtn.addEventListener('click', () => { clearHistory(); renderHistory(); });
 
   clearFavsBtn.addEventListener('click', () => {
-    if (confirm('¿Borrar todos los temas guardados? Esta acción no se puede deshacer.')) {
+    if (confirm('¿Borrar todos los temas guardados?')) {
       clearAllFavorites();
       renderFavorites();
     }
@@ -451,7 +485,11 @@ import Layout from '../layouts/Layout.astro';
       document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentMode = btn.dataset.mode;
-      if (currentTheme) { applyThemeToPreview(currentTheme, currentMode); updateColorTable(currentTheme); }
+      if (currentTheme) {
+        applyThemeToPreview(currentTheme, currentMode);
+        updateColorTable(currentTheme);
+        currentSwatches.innerHTML = buildSwatchGrid(getAll14Colors(currentTheme, currentMode));
+      }
     });
   });
 
