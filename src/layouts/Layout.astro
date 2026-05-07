@@ -1,5 +1,41 @@
 ---
 import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title = "Armonic Themes | Generador de Paletas de Colores UI/UX",
+  description = "Genera paletas de colores semánticas, accesibles (WCAG) y modernas. Exporta código listo para Tailwind CSS v4, v3 y Variables CSS. Diseñado para desarrolladores y diseñadores.",
+  image = "/favicon.svg", // Fallback a SVG (lo ideal es configurar una imagen og-image.png luego)
+} = Astro.props;
+
+// Construye la URL canónica basada en la solicitud actual
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || Astro.url).href;
+
+// Datos estructurados (Schema.org) para decirle a Google qué es esta app
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Armonic Themes",
+  "url": canonicalURL,
+  "description": description,
+  "applicationCategory": "DesignApplication",
+  "operatingSystem": "All",
+  "creator": {
+    "@type": "Person",
+    "name": "Devcito",
+    "url": "https://devcito.org"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+};
 ---
 <!doctype html>
 <html lang="es">
@@ -8,8 +44,30 @@ import '../styles/global.css';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Armonic Themes — Generate Beautiful Color Palettes</title>
-    <meta name="description" content="Generate beautiful, accessible semantic color palettes for your projects. Export to Tailwind CSS v4, CSS variables, or Tailwind v3 config. Light and dark mode included." />
+    
+    <!-- SEO Básico -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content="generador de paletas, colores UI, Tailwind CSS, variables CSS, diseño web, paleta de colores, accesibilidad, WCAG, frontend" />
+    <meta name="author" content="Devcito" />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Facebook (Para cuando compartes el link en RRSS) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={image} />
+
+    <!-- Datos Estructurados JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
   </head>
   <body>
     <slot />
