@@ -1,0 +1,253 @@
+---
+import Layout from "./Layout.astro";
+
+const { frontmatter } = Astro.props;
+const { title, description, date, readTime, tags = [] } = frontmatter;
+---
+
+<Layout title={title} description={description}>
+  <div class="bg-grid"></div>
+
+  <nav id="main-nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="gradient-text">Armonic</span>&nbsp;Themes
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Inicio</a>
+        <a href="/#generator" class="nav-link">Generador</a>
+        <a href="/blog" class="nav-link active">Blog</a>
+      </div>
+      <div class="nav-actions">
+        <button id="app-theme-toggle" class="theme-toggle-btn" title="Cambiar tema del sitio">
+          <span id="theme-icon">☀</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="post-main">
+    <header class="post-hero animate-fade-in-up">
+      <a href="/blog" class="back-link">← Volver al blog</a>
+      <div class="post-tags">
+        {tags.map((tag: string) => <span class="post-tag">{tag}</span>)}
+      </div>
+      <h1 class="post-title">
+        Cómo funciona el algoritmo de colores de <span class="gradient-text">Armonic Themes</span>
+      </h1>
+      <p class="post-subtitle">{description}</p>
+      <div class="post-meta">
+        <span>{date}</span>
+        <span class="post-dot">·</span>
+        <span>{readTime}</span>
+      </div>
+    </header>
+
+    <article class="prose-post animate-fade-in-up" style="animation-delay: 0.15s">
+      <slot />
+    </article>
+  </main>
+
+  <script>
+    const html = document.documentElement;
+    const toggleBtn = document.getElementById('app-theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    function applyTheme(theme: string) {
+      html.setAttribute('data-app-theme', theme);
+      if (themeIcon) themeIcon.textContent = theme === 'light' ? '☽' : '☀';
+      localStorage.setItem('app-theme', theme);
+    }
+
+    applyTheme(localStorage.getItem('app-theme') || 'dark');
+
+    toggleBtn?.addEventListener('click', () => {
+      const current = html.getAttribute('data-app-theme') || 'dark';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</Layout>
+
+<style is:global>
+  .post-main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.25rem 5rem;
+  }
+
+  .post-hero {
+    padding: 8rem 0 3rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--app-border);
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--app-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--app-accent); }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-tag {
+    background: color-mix(in srgb, var(--app-accent) 12%, transparent);
+    color: var(--app-accent);
+    border: 1px solid color-mix(in srgb, var(--app-accent) 30%, transparent);
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .post-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: var(--app-text);
+    margin-bottom: 1.25rem;
+  }
+
+  .post-subtitle {
+    font-size: 1.15rem;
+    color: var(--app-muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--app-muted);
+    font-size: 0.875rem;
+  }
+  .post-dot { opacity: 0.4; }
+
+  .prose-post {
+    color: color-mix(in srgb, var(--app-text) 85%, transparent);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+
+  .prose-post h2 {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--app-text);
+    margin: 3.5rem 0 1.25rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--app-border);
+  }
+
+  .prose-post h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--app-text);
+    margin: 2rem 0 0.75rem;
+  }
+
+  .prose-post p { margin-bottom: 1.1rem; }
+
+  .prose-post strong { color: var(--app-text); font-weight: 700; }
+
+  .prose-post a { color: var(--app-accent); text-decoration: underline; text-underline-offset: 3px; }
+
+  .prose-post ul,
+  .prose-post ol {
+    margin: 0 0 1.25rem 1.25rem;
+    padding-left: 0.5rem;
+  }
+  .prose-post li { margin-bottom: 0.4rem; }
+  .prose-post li::marker { color: var(--app-accent); }
+
+  .prose-post blockquote {
+    margin: 1.5rem 0;
+    padding: 0.25rem 0 0.25rem 1.25rem;
+    border-left: 3px solid var(--app-accent);
+    color: var(--app-muted);
+    font-size: 1.15rem;
+    font-style: italic;
+  }
+
+  .prose-post hr {
+    border: none;
+    height: 1px;
+    margin: 3rem 0;
+    background: linear-gradient(90deg, transparent, var(--app-border), transparent);
+  }
+
+  .prose-post :not(pre) > code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: color-mix(in srgb, var(--app-accent) 10%, var(--app-surface));
+    color: var(--app-accent);
+    border: 1px solid color-mix(in srgb, var(--app-accent) 22%, transparent);
+    border-radius: 6px;
+    padding: 0.15em 0.4em;
+  }
+
+  .prose-post pre {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    line-height: 1.7;
+    background: var(--app-surface) !important;
+    border: 1px solid var(--app-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--app-accent) 12%, transparent);
+  }
+
+  .prose-post pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  .prose-post table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 1.5rem 0;
+    font-size: 0.92rem;
+    border: 1px solid var(--app-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: block;
+    overflow-x: auto;
+  }
+
+  .prose-post th,
+  .prose-post td {
+    text-align: left;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--app-border);
+    vertical-align: top;
+  }
+
+  .prose-post th {
+    background: color-mix(in srgb, var(--app-accent) 10%, var(--app-surface));
+    color: var(--app-text);
+    font-weight: 700;
+  }
+
+  .prose-post tr:last-child td { border-bottom: none; }
+</style>

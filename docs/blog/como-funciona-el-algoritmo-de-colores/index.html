@@ -1,0 +1,197 @@
+<!DOCTYPE html><html lang="es"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="index, follow"><!-- Preconnect para performance --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><!-- Favicon e iconos --><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/favicon.svg"><meta name="theme-color" content="#22d3ee" media="(prefers-color-scheme: dark)"><meta name="theme-color" content="#0891b2" media="(prefers-color-scheme: light)"><meta name="generator" content="Astro v6.2.2"><!-- SEO Básico --><title>Cómo funciona el algoritmo de colores de Armonic Themes</title><meta name="description" content="Una mirada técnica a cómo generar paletas que siempre se ven bien, en claro y en oscuro."><meta name="keywords" content="generador de paletas, colores UI, Tailwind CSS, variables CSS, diseño web, paleta de colores, accesibilidad, WCAG, frontend, design system, color palette generator"><meta name="author" content="Devcito"><link rel="canonical" href="https://themes.devcito.org/blog/como-funciona-el-algoritmo-de-colores/"><!-- Open Graph --><meta property="og:type" content="website"><meta property="og:url" content="https://themes.devcito.org/blog/como-funciona-el-algoritmo-de-colores/"><meta property="og:site_name" content="Armonic Themes"><meta property="og:locale" content="es_ES"><meta property="og:title" content="Cómo funciona el algoritmo de colores de Armonic Themes"><meta property="og:description" content="Una mirada técnica a cómo generar paletas que siempre se ven bien, en claro y en oscuro."><meta property="og:image" content="https://themes.devcito.org/og-image.svg"><meta property="og:image:alt" content="Armonic Themes — Generador de paletas de colores UI/UX"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><!-- Twitter / X --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@devcito"><meta name="twitter:creator" content="@devcito"><meta name="twitter:url" content="https://themes.devcito.org/blog/como-funciona-el-algoritmo-de-colores/"><meta name="twitter:title" content="Cómo funciona el algoritmo de colores de Armonic Themes"><meta name="twitter:description" content="Una mirada técnica a cómo generar paletas que siempre se ven bien, en claro y en oscuro."><meta name="twitter:image" content="https://themes.devcito.org/og-image.svg"><meta name="twitter:image:alt" content="Armonic Themes — Generador de paletas de colores UI/UX"><!-- Datos Estructurados JSON-LD --><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Armonic Themes","url":"https://themes.devcito.org","description":"Una mirada técnica a cómo generar paletas que siempre se ven bien, en claro y en oscuro.","applicationCategory":"DesignApplication","operatingSystem":"All","inLanguage":"es","isAccessibleForFree":true,"creator":{"@type":"Person","name":"Devcito","url":"https://devcito.org"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Generador de paletas de colores con armonía garantizada","14 colores semánticos por tema","Modo claro y oscuro","Exportar en Tailwind CSS v4, v3 y Variables CSS","Verificación de contraste WCAG"]}</script><link rel="stylesheet" href="/_astro/Layout.BEeVM2EJ.css">
+<style>.post-main{max-width:760px;margin:0 auto;padding:0 1.25rem 5rem}.post-hero{padding:8rem 0 3rem;margin-bottom:1rem;border-bottom:1px solid var(--app-border)}.back-link{display:inline-block;color:var(--app-muted);text-decoration:none;font-size:.875rem;margin-bottom:1.5rem;transition:color .2s}.back-link:hover{color:var(--app-accent)}.post-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem}.post-tag{background:color-mix(in srgb,var(--app-accent) 12%,transparent);color:var(--app-accent);border:1px solid color-mix(in srgb,var(--app-accent) 30%,transparent);border-radius:999px;padding:.2rem .75rem;font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase}.post-title{font-family:var(--font-display);font-size:clamp(2rem,5vw,3rem);font-weight:700;line-height:1.12;letter-spacing:-.03em;color:var(--app-text);margin-bottom:1.25rem}.post-subtitle{font-size:1.15rem;color:var(--app-muted);line-height:1.6;margin-bottom:1.5rem}.post-meta{display:flex;align-items:center;gap:.5rem;color:var(--app-muted);font-size:.875rem}.post-dot{opacity:.4}.prose-post{color:color-mix(in srgb,var(--app-text) 85%,transparent);font-size:1.0625rem;line-height:1.8}.prose-post h2{font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-.02em;color:var(--app-text);margin:3.5rem 0 1.25rem;padding-bottom:.6rem;border-bottom:1px solid var(--app-border)}.prose-post h3{font-family:var(--font-display);font-size:1.2rem;font-weight:600;color:var(--app-text);margin:2rem 0 .75rem}.prose-post p{margin-bottom:1.1rem}.prose-post strong{color:var(--app-text);font-weight:700}.prose-post a{color:var(--app-accent);text-decoration:underline;text-underline-offset:3px}.prose-post ul,.prose-post ol{margin:0 0 1.25rem 1.25rem;padding-left:.5rem}.prose-post li{margin-bottom:.4rem}.prose-post li::marker{color:var(--app-accent)}.prose-post blockquote{margin:1.5rem 0;padding:.25rem 0 .25rem 1.25rem;border-left:3px solid var(--app-accent);color:var(--app-muted);font-size:1.15rem;font-style:italic}.prose-post hr{border:none;height:1px;margin:3rem 0;background:linear-gradient(90deg,transparent,var(--app-border),transparent)}.prose-post :not(pre)>code{font-family:var(--font-mono);font-size:.85em;background:color-mix(in srgb,var(--app-accent) 10%,var(--app-surface));color:var(--app-accent);border:1px solid color-mix(in srgb,var(--app-accent) 22%,transparent);border-radius:6px;padding:.15em .4em}.prose-post pre{font-family:var(--font-mono);font-size:.86rem;line-height:1.7;background:var(--app-surface)!important;border:1px solid var(--app-border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin:1.5rem 0;overflow-x:auto;box-shadow:inset 0 1px color-mix(in srgb,var(--app-accent) 12%,transparent)}.prose-post pre code{background:none;border:none;padding:0;font-size:inherit;color:inherit}.prose-post table{width:100%;border-collapse:separate;border-spacing:0;margin:1.5rem 0;font-size:.92rem;border:1px solid var(--app-border);border-radius:var(--radius-lg);overflow:hidden;display:block;overflow-x:auto}.prose-post th,.prose-post td{text-align:left;padding:.7rem 1rem;border-bottom:1px solid var(--app-border);vertical-align:top}.prose-post th{background:color-mix(in srgb,var(--app-accent) 10%,var(--app-surface));color:var(--app-text);font-weight:700}.prose-post tr:last-child td{border-bottom:none}
+</style></head> <body>  <div class="bg-grid"></div> <nav id="main-nav"> <div class="nav-inner"> <a href="/" class="nav-logo"> <span class="gradient-text">Armonic</span>&nbsp;Themes
+</a> <div class="nav-links"> <a href="/" class="nav-link">Inicio</a> <a href="/#generator" class="nav-link">Generador</a> <a href="/blog" class="nav-link active">Blog</a> </div> <div class="nav-actions"> <button id="app-theme-toggle" class="theme-toggle-btn" title="Cambiar tema del sitio"> <span id="theme-icon">☀</span> </button> </div> </div> </nav> <main class="post-main"> <header class="post-hero animate-fade-in-up"> <a href="/blog" class="back-link">← Volver al blog</a> <div class="post-tags"> <span class="post-tag">Algoritmos</span><span class="post-tag">Diseño</span><span class="post-tag">WCAG</span> </div> <h1 class="post-title">
+Cómo funciona el algoritmo de colores de <span class="gradient-text">Armonic Themes</span> </h1> <p class="post-subtitle">Una mirada técnica a cómo generar paletas que siempre se ven bien, en claro y en oscuro.</p> <div class="post-meta"> <span>Mayo 2026</span> <span class="post-dot">·</span> <span>8 min de lectura</span> </div> </header> <article class="prose-post animate-fade-in-up" style="animation-delay: 0.15s"> <h2 id="el-problema-de-las-paletas-aleatorias">El problema de las paletas “aleatorias”</h2>
+<p>Generar colores al azar es fácil. Generar colores al azar que <strong>se vean bien juntos</strong> es otro asunto completamente diferente.</p>
+<p>La mayoría de los generadores de temas eligen cada color de forma independiente: un rojo por aquí, un azul por allá, un verde que nadie pidió. El resultado suele ser una paleta caótica donde los colores pelean entre sí en lugar de complementarse.</p>
+<p>Armonic Themes resuelve esto con un principio fundamentalmente distinto.</p>
+<hr>
+<h2 id="el-principio-fundamental-un-solo-hue-lo-gobierna-todo">El principio fundamental: un solo hue lo gobierna todo</h2>
+<p>En lugar de elegir cada color de manera independiente, el algoritmo parte de <strong>un único Hue base</strong> (un ángulo en la rueda de color, entre 0° y 360°) y deriva <strong>todos los demás colores</strong> a partir de él usando relaciones matemáticas establecidas.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Hue base aleatorio (0–360°)</span></span>
+<span class="line"><span>        │</span></span>
+<span class="line"><span>        ▼</span></span>
+<span class="line"><span>┌─────────────────────┐</span></span>
+<span class="line"><span>│ Estrategia de       │  → define secondaryHue y accentHue</span></span>
+<span class="line"><span>│ armonía (al azar)   │</span></span>
+<span class="line"><span>└─────────────────────┘</span></span>
+<span class="line"><span>        │</span></span>
+<span class="line"><span>        ▼</span></span>
+<span class="line"><span>Todos los colores de la paleta</span></span></code></pre>
+<p>Esto garantiza que, sin importar qué número salga, los colores siempre tendrán una <strong>relación armónica</strong> entre sí.</p>
+<hr>
+<h2 id="las-estrategias-de-armonía">Las estrategias de armonía</h2>
+<p>El algoritmo incluye <strong>9 estrategias de armonía</strong>, elegidas al azar en cada generación:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Estrategia</th><th>Cómo funciona</th><th>Resultado</th></tr></thead><tbody><tr><td><strong>Análoga</strong></td><td>Hues vecinos (±18°–55°)</td><td>Suave, elegante, “de diseñador”</td></tr><tr><td><strong>Análoga amplia</strong></td><td>Vecinos más lejanos (±55°–160°)</td><td>Sofisticada, con más tensión</td></tr><tr><td><strong>Complementaria</strong></td><td>Hue opuesto (+180°)</td><td>Alto contraste, energética</td></tr><tr><td><strong>Triádica</strong></td><td>3 hues a 120° entre sí</td><td>Rica, colorida, balanceada</td></tr><tr><td><strong>Split-complementaria</strong></td><td>Vecinos del opuesto (+150° y +210°)</td><td>Contraste sin ser agresiva</td></tr><tr><td><strong>Doble-split</strong></td><td>Ambos lados del opuesto (±150°)</td><td>Vibrante y simétrica</td></tr><tr><td><strong>Tetrádica</strong></td><td>Cuadrado en la rueda (90° y 270°)</td><td>Máxima variedad de hues</td></tr><tr><td><strong>Monocromática</strong></td><td>Mismo hue con mínima variación (±12°–18°)</td><td>Elegancia pura, una sola familia</td></tr><tr><td><strong>Caótica</strong></td><td>Hues completamente libres</td><td>Máxima sorpresa, sin reglas</td></tr></tbody></table>
+<p>Por ejemplo, si el hue base es <strong>220° (azul)</strong>:</p>
+<ul>
+<li>Análoga → secondary ≈ 195°, accent ≈ 245°</li>
+<li>Complementaria → accent ≈ 40° (naranja)</li>
+<li>Triádica → secondary ≈ 340° (magenta), accent ≈ 100° (verde)</li>
+</ul>
+<hr>
+<h2 id="los-moods-la-personalidad-de-cada-paleta">Los Moods: la personalidad de cada paleta</h2>
+<p>La estrategia de armonía controla <em>qué hues</em> se usan. Pero el <strong>mood</strong> controla la saturación y luminosidad de cada color, que es lo que le da el “carácter” a la paleta.</p>
+<p>El algoritmo define <strong>17 moods</strong>, cada uno con rangos precisos de <code>[min, max]</code> para saturación (<code>S</code>) y luminosidad (<code>L</code>):</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>bold     → primaryS: [52-82%], primaryL: [38-60%]   — Firme, seguro</span></span>
+<span class="line"><span>soft     → primaryS: [28-58%], primaryL: [52-74%]   — Suave, amable</span></span>
+<span class="line"><span>vibrant  → primaryS: [74-100%], primaryL: [44-64%]  — Eléctrico, vivo</span></span>
+<span class="line"><span>pastel   → primaryS: [38-72%], primaryL: [68-87%]   — Dulce, delicado</span></span>
+<span class="line"><span>neon     → primaryS: [88-100%], primaryL: [52-68%]  — Extremo, digital</span></span>
+<span class="line"><span>jewel    → primaryS: [62-92%], primaryL: [22-42%]   — Esmeralda, zafiro, rubí</span></span>
+<span class="line"><span>mono     → primaryS: [4-18%],  primaryL: [18-52%]   — Casi escala de grises</span></span>
+<span class="line"><span>midnight → primaryS: [48-82%], primaryL: [48-72%]   — Nocturno, intenso</span></span>
+<span class="line"><span>corporate→ primaryS: [22-52%], primaryL: [26-50%]   — Profesional, sobrio</span></span>
+<span class="line"><span>... y más</span></span></code></pre>
+<p>La combinación de estrategia de armonía + mood produce <strong>miles de paletas visualmente coherentes</strong> sin intervención manual.</p>
+<hr>
+<h2 id="la-micro-variación-el-toque-de-aleatoriedad-controlada">La micro-variación: el toque de aleatoriedad controlada</h2>
+<p>Para que dos paletas con el mismo mood y estrategia no sean idénticas, el algoritmo aplica un <strong>multiplicador global de saturación y luminosidad</strong> en cada generación:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> satTwist</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> rand</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0.72</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">1.32</span><span style="color:#E1E4E8">);  </span><span style="color:#6A737D">// Amplifica o reduce TODA la saturación</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> litTwist</span><span style="color:#F97583"> =</span><span style="color:#B392F0"> rand</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0.92</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">1.08</span><span style="color:#E1E4E8">);  </span><span style="color:#6A737D">// Pequeña variación de luminosidad global</span></span></code></pre>
+<p>Un <code>satTwist</code> de 1.32 hace que todos los colores sean un 32% más saturados que lo normal para ese mood. Uno de 0.72 los apaga. Esto produce una variedad enorme dentro de la misma “familia” de paletas.</p>
+<hr>
+<h2 id="accesibilidad-automática-wcag-sin-esfuerzo">Accesibilidad automática: WCAG sin esfuerzo</h2>
+<p>Uno de los detalles más cuidados del algoritmo es que <strong>nunca hay que definir manualmente el color del texto</strong>. Cada foreground se calcula automáticamente usando la fórmula de luminancia relativa de las directrices WCAG 2.1:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Luminancia relativa = 0.2126·R + 0.7152·G + 0.0722·B</span></span></code></pre>
+<p>Si la luminancia del fondo supera 0.179 (umbral perceptual donde el ojo empieza a ver el color como “claro”), el texto se vuelve oscuro. Si está por debajo, se vuelve claro. Ambas variantes tienen un <strong>tinte sutil</strong> del hue base o secundario para que no sean un gris muerto:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#6A737D">// Fondo claro → texto oscuro teñido</span></span>
+<span class="line"><span style="color:#E1E4E8">{ </span><span style="color:#B392F0">h</span><span style="color:#E1E4E8">: darkTintHue, </span><span style="color:#B392F0">s</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">rand</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">15</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">45</span><span style="color:#E1E4E8">), </span><span style="color:#B392F0">l</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">rand</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">2</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">12</span><span style="color:#E1E4E8">) }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Fondo oscuro → texto claro teñido  </span></span>
+<span class="line"><span style="color:#E1E4E8">{ </span><span style="color:#B392F0">h</span><span style="color:#E1E4E8">: lightTintHue, </span><span style="color:#B392F0">s</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">rand</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">5</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">25</span><span style="color:#E1E4E8">), </span><span style="color:#B392F0">l</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">rand</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">92</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">98</span><span style="color:#E1E4E8">) }</span></span></code></pre>
+<p>El resultado es que <strong>todo texto generado cumple contraste legible</strong> de manera automática, y aun así los textos tienen personalidad cromática propia.</p>
+<hr>
+<h2 id="cómo-funciona-el-modo-oscuro">Cómo funciona el modo oscuro</h2>
+<p>Aquí está la magia. En lugar de “invertir” los colores o usar un overlay semitransparente (como hacen muchos frameworks), el algoritmo <strong>genera ambos modos desde el principio</strong>, compartiendo los mismos hues pero con <strong>lightness completamente diferente</strong>.</p>
+<h3 id="lo-que-se-comparte-entre-light-y-dark">Lo que se comparte entre light y dark</h3>
+<ul>
+<li>El color <code>primary</code>, <code>destructive</code> y <code>ring</code> son <strong>idénticos</strong> en ambos modos. Son los colores de acción y tienen su propio contraste garantizado.</li>
+</ul>
+<h3 id="lo-que-cambia-entre-light-y-dark">Lo que cambia entre light y dark</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Token</th><th>Light</th><th>Dark</th></tr></thead><tbody><tr><td><code>background</code></td><td>L: 93–99% (casi blanco)</td><td>L: 2–13% (casi negro)</td></tr><tr><td><code>muted</code></td><td>L: 86–96% (blanco grisáceo)</td><td>L: 11–26% (gris oscuro)</td></tr><tr><td><code>border</code></td><td>L: 75–91% (gris claro)</td><td>L: 23–45% (gris medio oscuro)</td></tr><tr><td><code>secondary</code></td><td>Saturación mínima, L alta</td><td>Saturación mínima, L baja</td></tr><tr><td><code>accent</code></td><td>Saturación media, L alta</td><td>Saturación media, L baja</td></tr></tbody></table>
+<p>Y aquí viene el detalle que hace que los modos oscuros tengan <em>personalidad</em>: los fondos oscuros no usan necesariamente el mismo hue que los fondos claros.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#6A737D">// Para el fondo oscuro, se elige un darkTintHue con más libertad:</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> darkTintCandidates</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> [baseHue, secondaryHue, accentHue, </span><span style="color:#B392F0">rand</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">200</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">260</span><span style="color:#E1E4E8">), </span><span style="color:#B392F0">rand</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">140</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">180</span><span style="color:#E1E4E8">)];</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> darkTintHue</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> Math.</span><span style="color:#B392F0">random</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">></span><span style="color:#79B8FF"> 0.35</span></span>
+<span class="line"><span style="color:#F97583">  ?</span><span style="color:#E1E4E8"> darkTintCandidates[</span><span style="color:#B392F0">randInt</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">, darkTintCandidates.</span><span style="color:#79B8FF">length</span><span style="color:#F97583"> -</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">)]</span></span>
+<span class="line"><span style="color:#F97583">  :</span><span style="color:#E1E4E8"> baseHue;</span></span></code></pre>
+<p>Esto significa que el fondo oscuro puede tener un tinte azul profundo aunque el color primario sea naranja. Es lo que evita que todos los modos oscuros sean “gris neutro con colores encima”.</p>
+<hr>
+<h2 id="el-flujo-completo-en-12-pasos">El flujo completo en 12 pasos</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>1.  Elegir HUE BASE (0–360°)</span></span>
+<span class="line"><span>2.  Elegir ESTRATEGIA DE ARMONÍA → calcular secondaryHue y accentHue</span></span>
+<span class="line"><span>2.5 Elegir MOOD → rangos S/L para cada token</span></span>
+<span class="line"><span>3.  Aplicar micro-variación (satTwist, litTwist)</span></span>
+<span class="line"><span>4.  Generar PRIMARY (hue base + rangos del mood)</span></span>
+<span class="line"><span>5.  Generar SECONDARY en versión base / light / dark</span></span>
+<span class="line"><span>6.  Generar ACCENT en versión light / dark</span></span>
+<span class="line"><span>7.  Generar DESTRUCTIVE (siempre en zona de rojos, 330–30°)</span></span>
+<span class="line"><span>8.  Elegir darkTintHue y lightTintHue para los fondos</span></span>
+<span class="line"><span>9.  Generar BACKGROUND light (L: 93–99%) y dark (L: 2–13%)</span></span>
+<span class="line"><span>10. Generar MUTED light y dark (segunda capa de fondo)</span></span>
+<span class="line"><span>11. Generar BORDER light y dark</span></span>
+<span class="line"><span>12. Calcular todos los FOREGROUNDS por luminancia WCAG automática</span></span></code></pre>
+<hr>
+<h2 id="nombrar-cada-paleta">Nombrar cada paleta</h2>
+<p>Para que cada tema sea memorable, el algoritmo genera nombres combinando dos listas de palabras:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>[Arctic, Velvet, Neon, Cosmic, Ember, Frosted...] + [Dawn, Wave, Pulse, Storm, Bloom...]</span></span>
+<span class="line"><span>→ "Arctic Dawn", "Velvet Pulse", "Cosmic Storm"</span></span></code></pre>
+<p>Son 70+ adjetivos × 70+ sustantivos = más de 4,900 combinaciones posibles, todas con ese sabor evocador de los nombres de temas de código.</p>
+<hr>
+<h2 id="en-resumen">En resumen</h2>
+<p>Lo que hace especial a este algoritmo es que <strong>la aleatoriedad está estructurada</strong>. Nada se elige de forma verdaderamente libre: el azar actúa dentro de rangos matemáticamente definidos, siguiendo relaciones de color probadas durante décadas de teoría del diseño.</p>
+<p>El resultado es un generador que puede producir miles de paletas distintas, cada una coherente y usable desde el primer intento, con modo claro y oscuro listos para producción.</p>
+<hr>
+<p><em>Escrito analizando el código fuente de <code>color-algorithm.js</code> del proyecto Armonic Themes.</em></p> </article> </main> <script type="module">const n=document.documentElement,o=document.getElementById("app-theme-toggle"),e=document.getElementById("theme-icon");function a(t){n.setAttribute("data-app-theme",t),e&&(e.textContent=t==="light"?"☽":"☀"),localStorage.setItem("app-theme",t)}a(localStorage.getItem("app-theme")||"dark");o?.addEventListener("click",()=>{const t=n.getAttribute("data-app-theme")||"dark";a(t==="dark"?"light":"dark")});</script>  </body></html>
