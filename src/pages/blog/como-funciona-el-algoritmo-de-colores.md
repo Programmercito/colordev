@@ -65,7 +65,7 @@ Por ejemplo, si el hue base es **220° (azul)**:
 
 La estrategia de armonía controla *qué hues* se usan. Pero el **mood** controla la saturación y luminosidad de cada color, que es lo que le da el "carácter" a la paleta.
 
-El algoritmo define **17 moods**, cada uno con rangos precisos de `[min, max]` para saturación (`S`) y luminosidad (`L`):
+El algoritmo define **18 moods**, cada uno con rangos precisos de `[min, max]` para saturación (`S`) y luminosidad (`L`):
 
 ```
 bold     → primaryS: [52-82%], primaryL: [38-60%]   — Firme, seguro
@@ -80,7 +80,9 @@ corporate→ primaryS: [22-52%], primaryL: [26-50%]   — Profesional, sobrio
 ... y más
 ```
 
-La combinación de estrategia de armonía + mood produce **miles de paletas visualmente coherentes** sin intervención manual.
+Además, la mitad de las veces el mood no es puro: el algoritmo **mezcla dos moods** interpolando sus rangos con una proporción aleatoria (entre 20% y 80%). Por ejemplo, `bold+soft` queda entre los dos. Con 18 moods puros y sus mezclas se obtienen 324 combinaciones de mood.
+
+La combinación de estrategia de armonía + mood produce **miles de paletas visualmente coherentes** sin intervención manual. Además, el secundario y el acento pueden intercambiar sus hues (50% de las veces), lo que duplica las variantes de cada estrategia.
 
 ---
 
@@ -115,7 +117,7 @@ Si la luminancia del fondo supera 0.179 (umbral perceptual donde el ojo empieza 
 { h: lightTintHue, s: rand(5, 25), l: rand(92, 98) }
 ```
 
-El resultado es que **todo texto generado cumple contraste legible** de manera automática, y aun así los textos tienen personalidad cromática propia.
+El resultado es que **todo texto generado cumple contraste legible** de manera automática, y aun así los textos tienen personalidad cromática propia. Si el foreground aleatorio no alcanza 4.5:1 (nivel AA), se usa negro o blanco puros, que siempre lo cumplen.
 
 ---
 

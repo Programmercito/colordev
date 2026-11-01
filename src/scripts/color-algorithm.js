@@ -119,19 +119,31 @@ function getLuminance(h, s, l) {
 }
 
 /**
+ * Ratio de contraste WCAG entre dos colores HSL (1 a 21).
+ */
+function contrastRatio(a, b) {
+  const la = getLuminance(a.h, a.s, a.l);
+  const lb = getLuminance(b.h, b.s, b.l);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+/**
  * Dado un color de fondo, devuelve un foreground que garantice contraste legible.
  * Devuelve casi-negro o casi-blanco dependiendo de la luminancia del fondo.
  * Acepta tintes independientes para dark y light para mayor variedad.
+ * Si el foreground aleatorio no alcanza 4.5:1 (WCAG AA), se fuerza un extremo.
  */
 function autoForeground(h, s, l, darkTint = h, lightTint = h) {
-  const lum = getLuminance(h, s, l);
+  const bg = { h, s, l };
+  const lightBg = getLuminance(h, s, l) > 0.179;
   // Pequeña variación adicional al hue para que no sea EXACTAMENTE el mismo siempre
-  const finalDarkTint = normHue(darkTint + rand(-15, 15));
-  const finalLightTint = normHue(lightTint + rand(-10, 10));
-  
-  return lum > 0.179
-    ? { h: finalDarkTint, s: rand(15, 45), l: rand(2, 12) }   // Fondo claro → oscuro teñido
-    : { h: finalLightTint, s: rand(5, 25), l: rand(92, 98) };  // Fondo oscuro → claro teñido
+  const fg = lightBg
+    ? { h: normHue(darkTint + rand(-15, 15)), s: rand(15, 45), l: rand(2, 12) }    // Fondo claro → oscuro teñido
+    : { h: normHue(lightTint + rand(-10, 10)), s: rand(5, 25), l: rand(92, 98) };  // Fondo oscuro → claro teñido
+
+  if (contrastRatio(bg, fg) >= 4.5) return fg;
+  // Negro o blanco puros siempre cumplen 4.5:1 (cubren todo el rango de luminancias).
+  return { ...fg, l: lightBg ? 0 : 100 };
 }
 
 // =============================================================================
@@ -453,13 +465,43 @@ const PALETTE_MOODS = {
   },
 };
 
+const MOOD_RANGE_KEYS = [
+  'primaryS', 'primaryL', 'secondaryS', 'secondaryL', 'accentS', 'accentL',
+  'bgTintS', 'bgLightL', 'bgDarkL', 'mutedLightL', 'mutedDarkL',
+];
+
 /**
- * Elige un mood al azar para la paleta — distribución uniforme entre todos.
- * 🎛️ VIBECODING: Ajusta los pesos para favorecer estilos concretos.
+ * Mezcla dos moods interpolando linealmente cada rango [min, max].
+ * t=0 → mood a, t=1 → mood b. Como la interpolación es combinación convexa,
+ * min nunca supera a max.
+ */
+function blendMoods(a, b, t) {
+  const blended = { name: `${a.name}+${b.name}` };
+  for (const key of MOOD_RANGE_KEYS) {
+    blended[key] = [
+      a[key][0] + (b[key][0] - a[key][0]) * t,
+      a[key][1] + (b[key][1] - a[key][1]) * t,
+    ];
+  }
+  return blended;
+}
+
+/**
+ * Elige un mood para la paleta: 50% un mood puro, 50% una mezcla de dos moods
+ * distintos con proporción aleatoria. Así hay muchas más variantes intermedias
+ * y ninguna se siente como un salto brusco entre estilos.
+ * 🎛️ VIBECODING: Ajusta la probabilidad de mezcla o los pesos de cada mood.
  */
 function pickMood() {
   const names = Object.keys(PALETTE_MOODS);
-  return PALETTE_MOODS[names[randInt(0, names.length - 1)]];
+  const a = PALETTE_MOODS[names[randInt(0, names.length - 1)]];
+  if (Math.random() < 0.5) return a;
+
+  let b;
+  do {
+    b = PALETTE_MOODS[names[randInt(0, names.length - 1)]];
+  } while (b === a);
+  return blendMoods(a, b, rand(0.2, 0.8));
 }
 
 // =============================================================================
@@ -504,7 +546,9 @@ export function generateTheme(options = {}) {
   // ── Paso 2: Estrategia de armonía ───────────────────────────────────────
   const strategyName = options.strategyName || pickHarmonyStrategy();
   const strategy = HARMONY_STRATEGIES[strategyName];
-  const { secondaryHue, accentHue } = strategy(baseHue);
+  let { secondaryHue, accentHue } = strategy(baseHue);
+  // Intercambio de roles: el mismo par de hues puede ser secundario o acento.
+  if (Math.random() < 0.5) [secondaryHue, accentHue] = [accentHue, secondaryHue];
 
   // ── Paso 2.5: MOOD de la paleta ─────────────────────────────────────────
   const mood = options.moodName ? PALETTE_MOODS[options.moodName] : pickMood();

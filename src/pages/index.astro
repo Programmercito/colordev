@@ -85,6 +85,19 @@ import Layout from "../layouts/Layout.astro";
             >
               ✦ Generar Nuevo Tema
             </button>
+
+            <!-- Base color: random hue or a user-picked hue -->
+            <div class="hue-mode">
+              <p class="section-title">Color base</p>
+              <div class="tabs">
+                <button class="tab active" id="hue-mode-random" data-hue-mode="random">🎲 Aleatorio</button>
+                <button class="tab" id="hue-mode-custom" data-hue-mode="custom">🎨 Elegir color</button>
+              </div>
+              <div id="base-color-row" class="base-color-row" hidden>
+                <input type="color" id="base-color-input" value="#3b82f6" aria-label="Color base" />
+                <span id="base-color-hex" class="base-color-hex">#3b82f6</span>
+              </div>
+            </div>
             <p id="theme-count-label" class="gen-counter">
               0 temas generados esta sesión
             </p>
@@ -418,6 +431,7 @@ import Layout from "../layouts/Layout.astro";
 <script>
   import {
     generateTheme,
+    hexToHsl,
     exportTailwindV4,
     exportCSSVariables,
     exportTailwindV3,
@@ -642,8 +656,27 @@ import Layout from "../layouts/Layout.astro";
   }
 
   // ── Generate ──────────────────────────────────────────────────────────────
+  // Modo de color base: "random" (tono aleatorio) o "custom" (tono del color elegido)
+  let hueMode = "random";
+  const hueModeButtons = document.querySelectorAll("[data-hue-mode]");
+  const baseColorRow = document.getElementById("base-color-row");
+  const baseColorInput = document.getElementById("base-color-input");
+  const baseColorHex = document.getElementById("base-color-hex");
+
+  function setHueMode(mode) {
+    hueMode = mode;
+    hueModeButtons.forEach((b) =>
+      b.classList.toggle("active", b.dataset.hueMode === mode)
+    );
+    baseColorRow.hidden = mode !== "custom";
+  }
+
   function doGenerate() {
-    const theme = generateTheme();
+    const options =
+      hueMode === "custom"
+        ? { baseHue: hexToHsl(baseColorInput.value).h }
+        : {};
+    const theme = generateTheme(options);
     addToHistory(theme);
     sessionCount++;
     themeCountLabel.textContent = `${sessionCount} tema${
@@ -654,6 +687,12 @@ import Layout from "../layouts/Layout.astro";
   }
 
   // ── Events ────────────────────────────────────────────────────────────────
+  hueModeButtons.forEach((btn) =>
+    btn.addEventListener("click", () => setHueMode(btn.dataset.hueMode))
+  );
+  baseColorInput.addEventListener("input", () => {
+    baseColorHex.textContent = baseColorInput.value;
+  });
   document.getElementById("generate-btn").addEventListener("click", doGenerate);
   document.getElementById("hero-generate-btn").addEventListener("click", () => {
     doGenerate();
